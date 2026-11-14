@@ -1,0 +1,4 @@
+# Local screenshot artifacts
+screenshot-*.png
+*.log
+.DS_Store

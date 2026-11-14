@@ -1,0 +1,345 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Metallic Gold Outer Bevel Gradient -->
+    <linearGradient id="goldOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fdf1c7"/>
+      <stop offset="25%" stop-color="#d4af37"/>
+      <stop offset="50%" stop-color="#996515"/>
+      <stop offset="75%" stop-color="#ffd700"/>
+      <stop offset="100%" stop-color="#aa771c"/>
+    </linearGradient>
+
+    <!-- Metallic Rim Highlight Gradient -->
+    <linearGradient id="goldRim" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#aa771c"/>
+      <stop offset="30%" stop-color="#ffd700"/>
+      <stop offset="50%" stop-color="#fff8db"/>
+      <stop offset="70%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#805200"/>
+    </linearGradient>
+
+    <!-- Enamel White / Cream Inner Ring -->
+    <linearGradient id="enamelRing" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f0ede6"/>
+    </linearGradient>
+
+    <!-- Globe Sphere 3D Deep Blue Radial Gradient -->
+    <radialGradient id="globeSphere" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#2a6fdb"/>
+      <stop offset="35%" stop-color="#144696"/>
+      <stop offset="70%" stop-color="#0a2558"/>
+      <stop offset="100%" stop-color="#041029"/>
+    </radialGradient>
+
+    <!-- Globe Atmospheric Outer Glow -->
+    <radialGradient id="globeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="85%" stop-color="#4184f3" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#4184f3" stop-opacity="0.6"/>
+    </radialGradient>
+
+    <!-- Globe Sphere Specular Highlight -->
+    <linearGradient id="globeSpecular" x1="20%" y1="10%" x2="80%" y2="90%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Corporate Blue Text Gradient with 3D Depth -->
+    <linearGradient id="corpBlueText" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1a3f7a"/>
+      <stop offset="50%" stop-color="#0b2545"/>
+      <stop offset="100%" stop-color="#051326"/>
+    </linearGradient>
+
+    <!-- Golden Continent Gradient -->
+    <linearGradient id="goldContinent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe89e"/>
+      <stop offset="40%" stop-color="#d4af37"/>
+      <stop offset="80%" stop-color="#996515"/>
+      <stop offset="100%" stop-color="#734b0d"/>
+    </linearGradient>
+
+    <!-- Shimmer Light Sweep Filter / Gradient -->
+    <linearGradient id="shimmerSweep" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="medalShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+
+    <filter id="embossShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+
+    <filter id="textDepth" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.6"/>
+      <feDropShadow dx="0" dy="-1" stdDeviation="1" flood-color="#ffd700" flood-opacity="0.5"/>
+    </filter>
+
+    <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Circular Paths for Text On Arc -->
+    <!-- Top Arc Path (Clockwise) -->
+    <path id="topArcPath" d="M 75,250 A 175,175 0 0,1 425,250" fill="none"/>
+    <!-- Bottom Arc Path (Clockwise from lower left to lower right) -->
+    <path id="bottomArcPath" d="M 425,250 A 175,175 0 0,1 75,250" fill="none"/>
+
+    <!-- Clip Path for Central Globe (Radius 135 at 250,250) -->
+    <clipPath id="globeClip">
+      <circle cx="250" cy="250" r="135"/>
+    </clipPath>
+  </defs>
+
+  <style>
+    /* Continuous 360 Globe Rotation Animation */
+    @keyframes rotateGlobe {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-540px); }
+    }
+
+    /* Shimmer Sweep Animation Across Metallic Rim */
+    @keyframes metallicShine {
+      0% { transform: rotate(0deg); opacity: 0.1; }
+      50% { opacity: 0.45; }
+      100% { transform: rotate(360deg); opacity: 0.1; }
+    }
+
+    /* Constellation Network Nodes Pulse */
+    @keyframes pulseNode {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.3); filter: drop-shadow(0 0 6px #ffd700); }
+    }
+
+    /* Lettering Subtle Shimmer */
+    @keyframes textGlint {
+      0%, 80%, 100% { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.7)); }
+      90% { filter: drop-shadow(0 0 8px #ffd700) drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
+    }
+
+    .globe-continents {
+      animation: rotateGlobe 14s linear infinite;
+    }
+
+    .shimmer-ring {
+      transform-origin: 250px 250px;
+      animation: metallicShine 8s linear infinite;
+    }
+
+    .pulsing-node {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: pulseNode 2.5s ease-in-out infinite;
+    }
+    .node-delay-1 { animation-delay: 0.6s; }
+    .node-delay-2 { animation-delay: 1.2s; }
+    .node-delay-3 { animation-delay: 1.8s; }
+
+    .brand-letters {
+      animation: textGlint 5s ease-in-out infinite;
+    }
+  </style>
+
+  <!-- 1. BASE MEDALLION WITH DROP SHADOW -->
+  <g filter="url(#medalShadow)">
+    <!-- Outer Beveled Gold Rim -->
+    <circle cx="250" cy="250" r="240" fill="url(#goldOuter)"/>
+    <circle cx="250" cy="250" r="236" fill="none" stroke="url(#goldRim)" stroke-width="4"/>
+    <circle cx="250" cy="250" r="232" fill="#7a4e0a"/>
+    <circle cx="250" cy="250" r="228" fill="url(#goldRim)"/>
+
+    <!-- Enamel White/Cream Ring for Text & Laurels -->
+    <circle cx="250" cy="250" r="220" fill="url(#enamelRing)"/>
+    
+    <!-- Fine Inner Gold Beading Ring -->
+    <circle cx="250" cy="250" r="148" fill="none" stroke="url(#goldOuter)" stroke-width="4"/>
+    <circle cx="250" cy="250" r="144" fill="none" stroke="#7a4e0a" stroke-width="1.5"/>
+    <circle cx="250" cy="250" r="140" fill="url(#goldRim)"/>
+  </g>
+
+  <!-- 2. SHIMMER LIGHT SWEEP ON MEDALLION (Subtle rotational specular) -->
+  <circle cx="250" cy="250" r="228" fill="none" stroke="url(#shimmerSweep)" stroke-width="24" opacity="0.3" class="shimmer-ring" style="pointer-events: none;"/>
+
+  <!-- 3. LAUREL WREATH LEAVES (Left & Right Flanks) -->
+  <g fill="url(#goldRim)" filter="url(#embossShadow)">
+    <!-- Left Laurel Branch -->
+    <path d="M 102,230 C 96,220 86,224 88,235 C 90,246 102,242 102,230 Z"/>
+    <path d="M 96,205 C 88,198 80,204 84,214 C 88,224 98,218 96,205 Z"/>
+    <path d="M 96,255 C 88,262 80,256 84,246 C 88,236 98,242 96,255 Z"/>
+    <path d="M 104,180 C 96,175 90,183 95,192 C 100,201 108,193 104,180 Z"/>
+    <path d="M 104,280 C 96,285 90,277 95,268 C 100,259 108,267 104,280 Z"/>
+    <path d="M 118,158 C 110,155 106,165 112,172 C 118,179 124,170 118,158 Z"/>
+    <path d="M 118,302 C 110,305 106,295 112,288 C 118,281 124,290 118,302 Z"/>
+
+    <!-- Right Laurel Branch -->
+    <path d="M 398,230 C 404,220 414,224 412,235 C 410,246 398,242 398,230 Z"/>
+    <path d="M 404,205 C 412,198 420,204 416,214 C 412,224 402,218 404,205 Z"/>
+    <path d="M 404,255 C 412,262 420,256 416,246 C 412,236 402,242 404,255 Z"/>
+    <path d="M 396,180 C 404,175 410,183 405,192 C 400,201 392,193 396,180 Z"/>
+    <path d="M 396,280 C 404,285 410,277 405,268 C 400,259 392,267 396,280 Z"/>
+    <path d="M 382,158 C 390,155 394,165 388,172 C 382,179 376,170 382,158 Z"/>
+    <path d="M 382,302 C 390,305 394,295 388,288 C 382,281 376,290 382,302 Z"/>
+  </g>
+
+  <!-- 4. EMBOSSED ARC TEXT ON MEDALLION -->
+  <!-- Top Arc: MILLENNIUM GLOBAL BUSINESS SOLUTIONS -->
+  <text font-family="'Cinzel', 'Trajan Pro', 'Georgia', serif" font-size="16.5" font-weight="800" fill="url(#goldOuter)" filter="url(#embossShadow)" letter-spacing="3.2">
+    <textPath href="#topArcPath" startOffset="50%" text-anchor="middle">
+      MILLENNIUM GLOBAL BUSINESS SOLUTIONS
+    </textPath>
+  </text>
+
+  <!-- Bottom Arc: PROCESS OPERATIONS ★ MAXIMIZING GROWTH -->
+  <text font-family="'Cinzel', 'Trajan Pro', 'Georgia', serif" font-size="14.5" font-weight="800" fill="url(#goldOuter)" filter="url(#embossShadow)" letter-spacing="3.8">
+    <textPath href="#bottomArcPath" startOffset="50%" text-anchor="middle">
+      PROCESS OPERATIONS ★ MAXIMIZING GROWTH
+    </textPath>
+  </text>
+
+  <!-- Central Star at Bottom -->
+  <polygon points="250,422 254,432 265,432 256,438 259,448 250,442 241,448 244,438 235,432 246,432" fill="url(#goldRim)" filter="url(#embossShadow)"/>
+
+  <!-- 5. 3D CENTRAL ROTATING GLOBE -->
+  <g>
+    <!-- Deep Blue Ocean Base Sphere -->
+    <circle cx="250" cy="250" r="135" fill="url(#globeSphere)"/>
+
+    <!-- Rotating Continents & Mesh Container (Clipped to Sphere) -->
+    <g clip-path="url(#globeClip)">
+      <!-- Animated Group Translating Horizontally -->
+      <g class="globe-continents">
+        <!-- REPEATED CONTINENT TILES (0 to 540 and 540 to 1080) FOR SEAMLESS 360 ROTATION -->
+        
+        <!-- Tile 1 -->
+        <g fill="url(#goldContinent)" opacity="0.92">
+          <!-- Americas -->
+          <path d="M 40,160 Q 60,140 85,150 Q 110,165 95,200 Q 85,215 105,235 Q 120,250 115,275 Q 110,310 90,340 Q 80,315 75,270 Q 70,240 50,210 Q 30,180 40,160 Z"/>
+          <!-- Europe & Africa -->
+          <path d="M 190,160 Q 220,150 240,170 Q 235,190 220,200 Q 240,225 245,260 Q 250,300 230,345 Q 210,330 200,290 Q 190,260 175,240 Q 180,210 170,185 Q 180,170 190,160 Z"/>
+          <!-- Asia -->
+          <path d="M 260,150 Q 310,135 365,160 Q 390,185 375,220 Q 350,230 330,210 Q 315,225 300,210 Q 280,220 265,195 Q 255,170 260,150 Z"/>
+          <!-- Australia -->
+          <path d="M 370,285 Q 405,275 415,305 Q 405,335 375,325 Q 360,305 370,285 Z"/>
+        </g>
+
+        <!-- Network Constellation Lines Tile 1 -->
+        <g stroke="#ffd700" stroke-width="1.2" opacity="0.65" fill="none">
+          <line x1="85" y1="170" x2="195" y2="185"/>
+          <line x1="195" y1="185" x2="230" y2="250"/>
+          <line x1="195" y1="185" x2="310" y2="175"/>
+          <line x1="310" y1="175" x2="385" y2="300"/>
+          <line x1="105" y1="260" x2="215" y2="290"/>
+          <line x1="215" y1="290" x2="385" y2="300"/>
+        </g>
+
+        <!-- Network Glowing Nodes Tile 1 -->
+        <g fill="#ffffff" filter="url(#nodeGlow)">
+          <circle cx="85" cy="170" r="3.5" class="pulsing-node"/>
+          <circle cx="195" cy="185" r="4" class="pulsing-node node-delay-1"/>
+          <circle cx="230" cy="250" r="3" class="pulsing-node node-delay-2"/>
+          <circle cx="310" cy="175" r="4.5" class="pulsing-node node-delay-3"/>
+          <circle cx="385" cy="300" r="3.5" class="pulsing-node node-delay-1"/>
+          <circle cx="105" cy="260" r="3" class="pulsing-node node-delay-2"/>
+          <circle cx="215" cy="290" r="3.5" class="pulsing-node node-delay-3"/>
+        </g>
+
+        <!-- Tile 2 (Shifted +540px for seamless loop) -->
+        <g transform="translate(540, 0)">
+          <!-- Americas -->
+          <path d="M 40,160 Q 60,140 85,150 Q 110,165 95,200 Q 85,215 105,235 Q 120,250 115,275 Q 110,310 90,340 Q 80,315 75,270 Q 70,240 50,210 Q 30,180 40,160 Z" fill="url(#goldContinent)" opacity="0.92"/>
+          <!-- Europe & Africa -->
+          <path d="M 190,160 Q 220,150 240,170 Q 235,190 220,200 Q 240,225 245,260 Q 250,300 230,345 Q 210,330 200,290 Q 190,260 175,240 Q 180,210 170,185 Q 180,170 190,160 Z" fill="url(#goldContinent)" opacity="0.92"/>
+          <!-- Asia -->
+          <path d="M 260,150 Q 310,135 365,160 Q 390,185 375,220 Q 350,230 330,210 Q 315,225 300,210 Q 280,220 265,195 Q 255,170 260,150 Z" fill="url(#goldContinent)" opacity="0.92"/>
+          <!-- Australia -->
+          <path d="M 370,285 Q 405,275 415,305 Q 405,335 375,325 Q 360,305 370,285 Z" fill="url(#goldContinent)" opacity="0.92"/>
+
+          <!-- Network Lines Tile 2 -->
+          <g stroke="#ffd700" stroke-width="1.2" opacity="0.65" fill="none">
+            <line x1="85" y1="170" x2="195" y2="185"/>
+            <line x1="195" y1="185" x2="230" y2="250"/>
+            <line x1="195" y1="185" x2="310" y2="175"/>
+            <line x1="310" y1="175" x2="385" y2="300"/>
+            <line x1="105" y1="260" x2="215" y2="290"/>
+            <line x1="215" y1="290" x2="385" y2="300"/>
+          </g>
+
+          <!-- Nodes Tile 2 -->
+          <g fill="#ffffff" filter="url(#nodeGlow)">
+            <circle cx="85" cy="170" r="3.5" class="pulsing-node"/>
+            <circle cx="195" cy="185" r="4" class="pulsing-node node-delay-1"/>
+            <circle cx="230" cy="250" r="3" class="pulsing-node node-delay-2"/>
+            <circle cx="310" cy="175" r="4.5" class="pulsing-node node-delay-3"/>
+            <circle cx="385" cy="300" r="3.5" class="pulsing-node node-delay-1"/>
+            <circle cx="105" cy="260" r="3" class="pulsing-node node-delay-2"/>
+            <circle cx="215" cy="290" r="3.5" class="pulsing-node node-delay-3"/>
+          </g>
+        </g>
+      </g>
+    </g>
+
+    <!-- Globe Glassy Specular Highlight Curve -->
+    <ellipse cx="225" cy="165" rx="90" ry="45" fill="url(#globeSpecular)" transform="rotate(-25 225 165)" pointer-events="none"/>
+
+    <!-- Inner Globe Atmosphere Edge -->
+    <circle cx="250" cy="250" r="135" fill="url(#globeGlow)" pointer-events="none"/>
+    <circle cx="250" cy="250" r="135" fill="none" stroke="url(#goldRim)" stroke-width="2.5"/>
+  </g>
+
+  <!-- 6. DR. NANGUNERI'S CORPORATE BLUE "MGBS" CENTERPIECE (Rounded Geometric Sans-Serif) -->
+  <!-- Subtle Soft Shadow behind Letters -->
+  <ellipse cx="250" cy="254" rx="82" ry="24" fill="#030c1c" opacity="0.6" filter="url(#nodeGlow)"/>
+
+  <!-- Extruded 3D Rounded Blue "MGBS" Text matching the original video geometry -->
+  <g class="brand-letters" filter="url(#textDepth)">
+    <!-- Base Soft Bevel Stroke (Rounded join & cap) -->
+    <text x="250" y="265" 
+          font-family="'Montserrat', 'Plus Jakarta Sans', 'Inter', 'Arial', sans-serif" 
+          font-size="42" 
+          font-weight="800" 
+          text-anchor="middle" 
+          letter-spacing="1.2"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+          fill="none" 
+          stroke="url(#goldRim)" 
+          stroke-width="3">
+      MGBS
+    </text>
+
+    <!-- Deep Corporate Blue Primary Fill -->
+    <text x="250" y="265" 
+          font-family="'Montserrat', 'Plus Jakarta Sans', 'Inter', 'Arial', sans-serif" 
+          font-size="42" 
+          font-weight="800" 
+          text-anchor="middle" 
+          letter-spacing="1.2"
+          fill="url(#corpBlueText)">
+      MGBS
+    </text>
+
+    <!-- Soft Top Specular Inset Highlight for 3D Curved Bevel -->
+    <text x="250" y="264" 
+          font-family="'Montserrat', 'Plus Jakarta Sans', 'Inter', 'Arial', sans-serif" 
+          font-size="42" 
+          font-weight="800" 
+          text-anchor="middle" 
+          letter-spacing="1.2"
+          fill="none" 
+          stroke="#ffffff" 
+          stroke-width="0.75" 
+          opacity="0.6"
+          stroke-linejoin="round">
+      MGBS
+    </text>
+  </g>
+</svg>
