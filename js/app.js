@@ -250,7 +250,7 @@ function initSmoothScroll() {
  * ScrollSpy: Dynamically update active navigation link with the gold underline
  */
 function initScrollSpy() {
-  const sectionIds = ['home', 'diagnostic', 'methodology', 'authority', 'consultation'];
+  const sectionIds = ['home', 'about', 'diagnostic', 'methodology', 'consultation'];
   const sections = sectionIds
     .map(id => ({ id, el: document.getElementById(id) }))
     .filter(item => item.el !== null);
