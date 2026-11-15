@@ -27,6 +27,11 @@
       const val = content[key];
       if (val && typeof val === 'string' && val.trim() !== '') {
         const trimmedVal = val.trim();
+        // If element is a mailto link, keep href in sync
+        if (el.tagName === 'A' && el.getAttribute('href') && el.getAttribute('href').startsWith('mailto:')) {
+          el.href = 'mailto:' + trimmedVal;
+        }
+
         // If element contains structured inner HTML tags like <br> or <strong>, support safe HTML
         if (trimmedVal.indexOf('<') !== -1 && trimmedVal.indexOf('>') !== -1) {
           if (el.innerHTML !== trimmedVal) {
