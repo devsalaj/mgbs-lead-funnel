@@ -15,6 +15,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initHeader();
   initMobileNav();
+  initProjectsDropdown();
   initStatsCounters();
   initDiagnosticEngine();
   initSmoothScroll();
@@ -46,7 +47,7 @@ function initHeader() {
 function initMobileNav() {
   const toggleBtn = document.querySelector('.mobile-nav-toggle');
   const drawer = document.querySelector('.mobile-drawer');
-  const navLinks = document.querySelectorAll('.mobile-drawer .nav-link, .mobile-drawer .btn');
+  const navLinks = document.querySelectorAll('.mobile-drawer .nav-link, .mobile-drawer .btn, .mobile-drawer .mobile-project-item');
 
   if (!toggleBtn || !drawer) return;
 
@@ -77,6 +78,64 @@ function initMobileNav() {
       drawer.classList.remove('open');
       toggleBtn.setAttribute('aria-expanded', 'false');
     }
+  });
+}
+
+/**
+ * Ongoing Projects Dashboard Popover / Dropdown
+ */
+function initProjectsDropdown() {
+  const container = document.querySelector('.projects-dropdown-container');
+  const triggerBtn = document.getElementById('btn-projects-dropdown');
+  const menu = document.getElementById('projects-dropdown-menu');
+
+  if (!container || !triggerBtn || !menu) return;
+
+  const openDropdown = () => {
+    container.classList.add('open');
+    triggerBtn.setAttribute('aria-expanded', 'true');
+    menu.setAttribute('aria-hidden', 'false');
+  };
+
+  const closeDropdown = () => {
+    container.classList.remove('open');
+    triggerBtn.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
+  };
+
+  const toggleDropdown = (e) => {
+    e.stopPropagation();
+    const isOpen = container.classList.contains('open');
+    if (isOpen) {
+      closeDropdown();
+    } else {
+      openDropdown();
+    }
+  };
+
+  triggerBtn.addEventListener('click', toggleDropdown);
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (container.classList.contains('open') && !container.contains(e.target)) {
+      closeDropdown();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && container.classList.contains('open')) {
+      closeDropdown();
+      triggerBtn.focus();
+    }
+  });
+
+  // Close when clicking any menu link
+  const menuLinks = menu.querySelectorAll('a');
+  menuLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      closeDropdown();
+    });
   });
 }
 

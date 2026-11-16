@@ -65,6 +65,52 @@
 
       <!-- Header Actions -->
       <div class="nav-actions">
+        <!-- Ongoing Projects Dashboard Dropdown Trigger -->
+        <div class="projects-dropdown-container">
+          <button id="btn-projects-dropdown" class="btn-projects-trigger" aria-haspopup="true" aria-expanded="false" title="Ongoing Projects Dashboard">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="18" height="18">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>Ongoing Projects</span>
+            <svg class="chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="14" height="14">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <div id="projects-dropdown-menu" class="projects-dropdown-menu" role="menu" aria-hidden="true">
+            <div class="dropdown-header">
+              <div class="dropdown-title">Ongoing Projects Dashboard</div>
+              <div class="dropdown-badge">🔒 Restricted Team Access</div>
+            </div>
+            
+            <div class="dropdown-links">
+              <a href="https://docs.google.com/spreadsheets/d/1qOfWJT9x5BxcWQbTRzFjmjMhHDJDXpoPHukdRutS1-U/edit#gid=517463816" target="_blank" rel="noopener noreferrer" class="dropdown-item" role="menuitem">
+                <div class="item-icon-box">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="18" height="18">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div class="item-content">
+                  <div class="item-title">3D Animation Project (The Multipult) <span class="external-arrow">↗</span></div>
+                  <div class="item-desc">Scene progress, stopwatch tracking & render reviews</div>
+                </div>
+              </a>
+
+              <a href="https://docs.google.com/spreadsheets/d/1udlLNXjaxnW6GO3n-yffB1qNE3MExdH83y9g_48h-Nk/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer" class="dropdown-item" role="menuitem">
+                <div class="item-icon-box">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" width="18" height="18">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div class="item-content">
+                  <div class="item-title">Corporate Website Platform (Lead CRM) <span class="external-arrow">↗</span></div>
+                  <div class="item-desc">Live consultation inquiries & prospect funnel CRM</div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+
         <a href="#consultation" class="btn btn-primary" data-content-key="nav_cta">Schedule Consultation</a>
         <button class="mobile-nav-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -81,6 +127,33 @@
       <a href="#about" class="nav-link">About</a>
       <a href="#diagnostic" class="nav-link">3 Ds Diagnostic Engine</a>
       <a href="#methodology" class="nav-link">The 8 Rs Methodology</a>
+      
+      <!-- Mobile Ongoing Projects Section -->
+      <div class="mobile-projects-section">
+        <div class="mobile-projects-header">
+          <span>📊 Ongoing Projects Dashboard</span>
+          <span class="mobile-projects-badge">Restricted</span>
+        </div>
+        <div class="mobile-projects-links">
+          <a href="https://docs.google.com/spreadsheets/d/1qOfWJT9x5BxcWQbTRzFjmjMhHDJDXpoPHukdRutS1-U/edit#gid=517463816" target="_blank" rel="noopener noreferrer" class="mobile-project-item">
+            <span class="proj-emoji">🎬</span>
+            <div class="proj-details">
+              <strong>3D Animation Project (The Multipult)</strong>
+              <span>Scene progress & render reviews</span>
+            </div>
+            <span class="proj-arrow">↗</span>
+          </a>
+          <a href="https://docs.google.com/spreadsheets/d/1udlLNXjaxnW6GO3n-yffB1qNE3MExdH83y9g_48h-Nk/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer" class="mobile-project-item">
+            <span class="proj-emoji">📋</span>
+            <div class="proj-details">
+              <strong>Corporate Website Platform (Lead CRM)</strong>
+              <span>Live inquiries & prospect funnel CRM</span>
+            </div>
+            <span class="proj-arrow">↗</span>
+          </a>
+        </div>
+      </div>
+
       <a href="#consultation" class="btn btn-gold" data-content-key="nav_cta" style="width: 100%;">Schedule Consultation</a>
     </div>
   </header>
