@@ -56,6 +56,16 @@ html {
   scroll-behavior: smooth;
   font-size: 16px;
   text-size-adjust: 100%;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar completely across Chrome, Safari, Edge, Opera */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 body {
@@ -66,6 +76,8 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 a {
@@ -107,11 +119,20 @@ button, input, select, textarea {
   box-shadow: 0 4px 20px rgba(11, 37, 69, 0.08);
 }
 
+/* Fluid wide container specifically for the top header */
+.site-header .container {
+  max-width: 1720px;
+  width: 100%;
+  padding-left: clamp(1.25rem, 3.5vw, 3rem);
+  padding-right: clamp(1.25rem, 3.5vw, 3rem);
+}
+
 .nav-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 80px;
+  gap: 1.5rem;
 }
 
 /* Brand Component Integration */
@@ -221,7 +242,7 @@ button, input, select, textarea {
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: clamp(1.25rem, 2vw, 2.25rem);
   list-style: none;
 }
 
@@ -317,13 +338,13 @@ button, input, select, textarea {
 .btn-projects-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--mgbs-border);
   color: var(--mgbs-navy);
-  font-size: 0.875rem;
+  font-size: 0.84375rem;
   font-weight: 600;
-  padding: 0.55rem 0.95rem;
+  padding: 0.5rem 0.85rem;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -1967,6 +1988,84 @@ div[id="authority"] {
 
 .toast.success {
   border-left-color: var(--mgbs-green);
+}
+
+/* ==========================================================================
+   Floating Section Navigation FAB (Bottom Right)
+   ========================================================================== */
+.fab-section-nav {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(11, 25, 44, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(229, 169, 60, 0.3);
+  box-shadow: 0 12px 32px rgba(11, 25, 44, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-full);
+  padding: 0.35rem;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+
+.fab-section-nav:hover {
+  border-color: rgba(229, 169, 60, 0.6);
+  box-shadow: 0 16px 40px rgba(11, 25, 44, 0.55), 0 0 20px rgba(229, 169, 60, 0.2);
+}
+
+.fab-nav-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: rgba(30, 62, 98, 0.45);
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.fab-nav-btn:hover:not(:disabled) {
+  background: #1E3E62;
+  color: #E5A93C;
+  border-color: rgba(229, 169, 60, 0.4);
+  transform: scale(1.08);
+}
+
+.fab-nav-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.fab-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.fab-section-indicator {
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #E5A93C;
+  padding: 0.15rem 0.25rem;
+  user-select: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .fab-section-nav {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    transform: scale(0.9);
+    transform-origin: bottom right;
+  }
 }
 
 /* --- Responsive Media Queries --- */

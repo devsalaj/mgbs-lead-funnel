@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDiagnosticEngine();
   initSmoothScroll();
   initScrollSpy();
+  initSectionNavFab();
 });
 
 /**
@@ -373,4 +374,82 @@ function initScrollSpy() {
       }
     });
   });
+}
+
+/**
+ * Floating Section Navigation FAB (Next / Prev Section Jumps)
+ */
+function initSectionNavFab() {
+  const fab = document.getElementById('fab-section-nav');
+  const btnPrev = document.getElementById('btn-fab-prev');
+  const btnNext = document.getElementById('btn-fab-next');
+  const indicator = document.getElementById('fab-section-indicator');
+
+  if (!fab || !btnPrev || !btnNext) return;
+
+  const sectionIds = ['home', 'about', 'diagnostic', 'methodology', 'consultation'];
+  const sections = sectionIds
+    .map(id => document.getElementById(id))
+    .filter(el => el !== null);
+
+  let currentIndex = 0;
+
+  const scrollToSection = (index) => {
+    if (index < 0 || index >= sections.length) return;
+    const targetEl = sections[index];
+    const header = document.querySelector('.site-header');
+    const headerHeight = header ? header.offsetHeight : 80;
+    const targetY = targetEl.getBoundingClientRect().top + window.pageYOffset - (headerHeight - 2);
+
+    window.scrollTo({
+      top: Math.max(0, targetY),
+      behavior: 'smooth'
+    });
+  };
+
+  const updateFabState = () => {
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const header = document.querySelector('.site-header');
+    const headerHeight = header ? header.offsetHeight : 80;
+
+    let detectedIndex = 0;
+    if ((window.innerHeight + scrollY) >= (document.documentElement.scrollHeight - 60)) {
+      detectedIndex = sections.length - 1;
+    } else {
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const rect = sections[i].getBoundingClientRect();
+        if (rect.top <= headerHeight + 140) {
+          detectedIndex = i;
+          break;
+        }
+      }
+    }
+
+    currentIndex = detectedIndex;
+
+    // Enable/disable buttons based on position
+    btnPrev.disabled = (currentIndex === 0);
+    btnNext.disabled = (currentIndex === sections.length - 1);
+
+    if (indicator) {
+      indicator.textContent = `0${currentIndex + 1} / 0${sections.length}`;
+    }
+  };
+
+  btnPrev.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentIndex > 0) {
+      scrollToSection(currentIndex - 1);
+    }
+  });
+
+  btnNext.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentIndex < sections.length - 1) {
+      scrollToSection(currentIndex + 1);
+    }
+  });
+
+  window.addEventListener('scroll', updateFabState, { passive: true });
+  updateFabState();
 }

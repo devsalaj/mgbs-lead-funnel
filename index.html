@@ -21,8 +21,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="css/styles.css">
+  <!-- Custom CSS (Cache-busted v2.3) -->
+  <link rel="stylesheet" href="css/styles.css?v=2.3">
 </head>
 <body>
 
@@ -59,7 +59,6 @@
           <li><a href="#about" class="nav-link">About</a></li>
           <li><a href="#diagnostic" class="nav-link">3 Ds Diagnostic</a></li>
           <li><a href="#methodology" class="nav-link">Methodology</a></li>
-          <li><a href="#consultation" class="nav-link">Consultation</a></li>
         </ul>
       </nav>
 
@@ -1087,6 +1086,21 @@
     </div>
   </div>
 
+
+  <!-- Floating Section Navigation FAB (Next/Prev Controls) -->
+  <aside class="fab-section-nav" id="fab-section-nav" aria-label="Quick Page Section Navigation">
+    <button type="button" id="btn-fab-prev" class="fab-nav-btn" aria-label="Previous Section" title="Previous Section">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" width="18" height="18">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+      </svg>
+    </button>
+    <span id="fab-section-indicator" class="fab-section-indicator">01 / 05</span>
+    <button type="button" id="btn-fab-next" class="fab-nav-btn" aria-label="Next Section" title="Next Section">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" width="18" height="18">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </button>
+  </aside>
 
   <!-- Toast Notification Container -->
   <div class="toast-container" aria-live="polite"></div>
