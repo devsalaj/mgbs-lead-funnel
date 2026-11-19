@@ -1,0 +1,30 @@
+{
+  "audio_file": "/home/salajka/CREATOR/FlowZuite/MGBS s nanguneri /mgbs-lead-funnel/assets/audio/ctex-overview-chaptered.mp3",
+  "total_duration": 87.84,
+  "cue_points": [
+    {
+      "chapter": 1,
+      "title": "The Six Sigma Approach to Careers",
+      "startTime": 0.0,
+      "duration": 26.5
+    },
+    {
+      "chapter": 2,
+      "title": "CTEx Lifecycle & Handling Transition Risks",
+      "startTime": 26.5,
+      "duration": 21.34
+    },
+    {
+      "chapter": 3,
+      "title": "Real-World Track Record & Recommendations",
+      "startTime": 47.83,
+      "duration": 23.9
+    },
+    {
+      "chapter": 4,
+      "title": "Program Options & Next Steps",
+      "startTime": 71.74,
+      "duration": 16.1
+    }
+  ]
+}

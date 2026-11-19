@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSmoothScroll();
   initScrollSpy();
   initSectionNavFab();
+  initCtexModule();
 });
 
 /**
@@ -310,7 +311,7 @@ function initSmoothScroll() {
  * ScrollSpy: Dynamically update active navigation link with the gold underline
  */
 function initScrollSpy() {
-  const sectionIds = ['home', 'about', 'diagnostic', 'methodology', 'consultation'];
+  const sectionIds = ['home', 'about', 'diagnostic', 'methodology', 'ctex', 'consultation'];
   const sections = sectionIds
     .map(id => ({ id, el: document.getElementById(id) }))
     .filter(item => item.el !== null);
@@ -387,7 +388,7 @@ function initSectionNavFab() {
 
   if (!fab || !btnPrev || !btnNext) return;
 
-  const sectionIds = ['home', 'about', 'diagnostic', 'methodology', 'consultation'];
+  const sectionIds = ['home', 'about', 'diagnostic', 'methodology', 'ctex', 'consultation'];
   const sections = sectionIds
     .map(id => document.getElementById(id))
     .filter(el => el !== null);
@@ -452,4 +453,325 @@ function initSectionNavFab() {
 
   window.addEventListener('scroll', updateFabState, { passive: true });
   updateFabState();
+}
+
+/**
+ * ============================================================================
+ * Career Transition Excellence (CTEx) & Interactive Audio (Project 1.1)
+ * ============================================================================
+ */
+function initCtexModule() {
+  const tierSelect = document.getElementById('ctex-tier-select');
+  const priceDisplay = document.getElementById('ctex-price-val');
+  const headingDisplay = document.getElementById('ctex-tier-heading');
+  const personaDisplay = document.getElementById('ctex-tier-persona');
+  const deliverablesList = document.getElementById('ctex-deliverables-list');
+  const enrollBtn = document.getElementById('ctex-enroll-btn');
+  const enrollBtnText = document.getElementById('ctex-enroll-btn-text');
+
+  // Audio elements
+  const audioElement = document.getElementById('ctex-audio-element');
+  const playBtn = document.getElementById('btn-audio-play');
+  const playIcon = document.getElementById('audio-icon-play');
+  const pauseIcon = document.getElementById('audio-icon-pause');
+  const timeCurrent = document.getElementById('player-time-current');
+  const timeTotal = document.getElementById('player-time-total');
+  const chapterActiveLabel = document.getElementById('player-chapter-active-title');
+  const scrubberTrack = document.getElementById('player-scrubber-track');
+  const trackFill = document.getElementById('player-track-fill');
+  const chapterPills = document.querySelectorAll('.chapter-pill');
+
+  // 7 Verified CTEx Tiers (All charm-priced ending in 69 or 99)
+  const CTEX_TIERS = {
+    'tier-1': {
+      name: 'Resume Design Optimization',
+      price: 69,
+      formattedPrice: '$69',
+      persona: 'Target: Job seekers & professionals needing ATS compliance and high-impact structural clarity.',
+      deliverables: [
+        'Full structural overhaul & ATS compliance scan',
+        'Quantifiable metrics alignment (eliminating resume defects)',
+        'Executive format deliverable (PDF & editable source)'
+      ]
+    },
+    'tier-2': {
+      name: 'LinkedIn Profile Optimization',
+      price: 69,
+      formattedPrice: '$69',
+      persona: 'Target: Professionals seeking algorithmic recruiter discoverability and high-authority executive positioning.',
+      deliverables: [
+        'Headline, About & Experience overhaul for SEO keywords',
+        'Strategic featured section curation & social proof arrangement',
+        'Outreach & networking communication playbooks'
+      ]
+    },
+    'tier-3': {
+      name: 'Academic Excellence (High School, UG & PG)',
+      price: 99,
+      formattedPrice: '$99',
+      persona: 'Target: High School, Undergraduate & Postgraduate students aiming for top-tier admissions and internships.',
+      deliverables: [
+        'Academic trajectory review & coursework positioning',
+        'Statement of Purpose (SOP) & application essay refinement',
+        'Research & extracurricular portfolio structuring'
+      ]
+    },
+    'tier-4': {
+      name: 'UG/PG Employment Success',
+      price: 199,
+      formattedPrice: '$199',
+      persona: 'Target: Graduating students and campus placement candidates entering the competitive job market.',
+      deliverables: [
+        'Campus-to-corporate transition diagnostic',
+        'Resume & LinkedIn synchronization tailored to target roles',
+        'Mock interview preparation & behavioral question frameworks'
+      ]
+    },
+    'tier-5': {
+      name: 'Early Professional Career Success',
+      price: 499,
+      formattedPrice: '$499',
+      persona: 'Target: Early-career professionals (1–5 years experience) seeking accelerated promotion or lateral pivot.',
+      deliverables: [
+        'Career trajectory diagnostic & 3-year growth roadmap',
+        'Variance analysis of current skill gaps vs market demand',
+        'Two 1-on-1 strategic coaching sessions with Dr. Shree',
+        'Salary negotiation & compensation benchmarking tactics'
+      ]
+    },
+    'tier-6': {
+      name: 'Mid Career Transitions',
+      price: 999,
+      formattedPrice: '$999',
+      persona: 'Target: Managers & team leads (6–15 years experience) navigating industry shifts or managerial promotions.',
+      deliverables: [
+        'Comprehensive DMAIC career audit & transition risk mitigation',
+        'Executive leadership presence & cross-functional positioning',
+        'Four 1-on-1 strategic mentorship sessions with Dr. Shree',
+        'Confidential executive recruiter positioning package'
+      ]
+    },
+    'tier-7': {
+      name: 'Senior Management Career Progress',
+      price: 1999,
+      formattedPrice: '$1,999',
+      persona: 'Target: Senior Directors, VPs & C-Suite candidates seeking high-stakes executive roles and board seats.',
+      deliverables: [
+        'Full executive board & advisory dossier development',
+        'Executive headhunter engagement & personal branding strategy',
+        'Six 1-on-1 deep advisory sessions with Dr. Shree Nanguneri, PhD',
+        'Direct ongoing advisory support throughout offer & negotiation'
+      ]
+    }
+  };
+
+  // 4 Chapter Cue Points
+  const CHAPTER_CUES = [
+    { chapter: 1, title: 'Chapter 1: Six Sigma in Careers', start: 0.0, end: 26.5 },
+    { chapter: 2, title: 'Chapter 2: Handling Transition Risks', start: 26.5, end: 47.83 },
+    { chapter: 3, title: 'Chapter 3: Track Record & LinkedIn', start: 47.83, end: 71.74 },
+    { chapter: 4, title: 'Chapter 4: Program Options & Action', start: 71.74, end: 87.84 }
+  ];
+
+  // Telemetry Event Dispatcher
+  const trackCtexEvent = (eventName, payload) => {
+    const record = {
+      event: eventName,
+      payload: payload,
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('_mgbs_telemetry_events') || '[]');
+      existing.push(record);
+      localStorage.setItem('_mgbs_telemetry_events', JSON.stringify(existing.slice(-100)));
+    } catch (e) {
+      // Storage unavailable or disabled
+    }
+
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', eventName, payload);
+    }
+
+    console.log('[MGBS Telemetry]', eventName, payload);
+  };
+
+  // --- COMPONENT 1: Tier Selection Handler ---
+  if (tierSelect && priceDisplay && headingDisplay && personaDisplay && deliverablesList && enrollBtn) {
+    const updateTierUI = (tierKey) => {
+      const tier = CTEX_TIERS[tierKey];
+      if (!tier) return;
+
+      // Update UI
+      priceDisplay.textContent = tier.formattedPrice;
+      headingDisplay.textContent = tier.name;
+      personaDisplay.textContent = tier.persona;
+
+      // Rebuild deliverables checklist
+      deliverablesList.innerHTML = tier.deliverables.map(item => `
+        <li>
+          <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          <span>${item}</span>
+        </li>
+      `).join('');
+
+      // Update CTA attributes
+      enrollBtn.setAttribute('data-tier', tierKey);
+      enrollBtn.setAttribute('data-price', tier.price);
+      enrollBtn.setAttribute('data-name', tier.name);
+      if (enrollBtnText) {
+        enrollBtnText.textContent = `Enroll / Sign Up to Pay — ${tier.formattedPrice}`;
+      }
+
+      // Telemetry
+      trackCtexEvent('ctex_tier_selected', {
+        tier_id: tierKey,
+        tier_name: tier.name,
+        price: tier.price
+      });
+    };
+
+    tierSelect.addEventListener('change', (e) => {
+      updateTierUI(e.target.value);
+    });
+
+    // CTA Click - Pre-fill Consultation Challenge Dropdown & Telemetry
+    enrollBtn.addEventListener('click', (e) => {
+      const selectedTierKey = enrollBtn.getAttribute('data-tier') || 'tier-1';
+      const tier = CTEX_TIERS[selectedTierKey];
+
+      trackCtexEvent('ctex_enroll_initiated', {
+        tier_id: selectedTierKey,
+        tier_name: tier.name,
+        price: tier.price
+      });
+
+      // Pre-fill consultation challenge dropdown if present
+      const challengeDropdown = document.getElementById('operational_challenge');
+      if (challengeDropdown) {
+        const matchingOption = Array.from(challengeDropdown.options).find(opt => 
+          opt.value.includes(tier.name) || opt.value.includes(`$${tier.price}`)
+        );
+        if (matchingOption) {
+          challengeDropdown.value = matchingOption.value;
+          challengeDropdown.dispatchEvent(new Event('change'));
+        }
+      }
+    });
+  }
+
+  // --- COMPONENT 2: Single-File Chaptered Audio Player ---
+  if (audioElement && playBtn && scrubberTrack && trackFill) {
+    const formatTime = (seconds) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const setPlayState = (isPlaying) => {
+      if (isPlaying) {
+        playIcon.classList.add('d-none');
+        pauseIcon.classList.remove('d-none');
+        playBtn.setAttribute('aria-label', 'Pause Audio');
+      } else {
+        playIcon.classList.remove('d-none');
+        pauseIcon.classList.add('d-none');
+        playBtn.setAttribute('aria-label', 'Play Audio');
+      }
+    };
+
+    playBtn.addEventListener('click', () => {
+      if (audioElement.paused) {
+        audioElement.play().then(() => {
+          setPlayState(true);
+          trackCtexEvent('ctex_audio_play', { currentTime: audioElement.currentTime });
+        }).catch(err => {
+          console.warn('Playback error:', err);
+        });
+      } else {
+        audioElement.pause();
+        setPlayState(false);
+        trackCtexEvent('ctex_audio_pause', { currentTime: audioElement.currentTime });
+      }
+    });
+
+    audioElement.addEventListener('play', () => setPlayState(true));
+    audioElement.addEventListener('pause', () => setPlayState(false));
+    audioElement.addEventListener('ended', () => {
+      setPlayState(false);
+      trackFill.style.width = '0%';
+      if (timeCurrent) timeCurrent.textContent = '00:00';
+      trackCtexEvent('ctex_audio_completed', {});
+    });
+
+    audioElement.addEventListener('loadedmetadata', () => {
+      if (timeTotal && audioElement.duration) {
+        timeTotal.textContent = formatTime(audioElement.duration);
+      }
+    });
+
+    // Timeupdate sync for scrubber bar, time readouts, and chapter highlights
+    audioElement.addEventListener('timeupdate', () => {
+      const cur = audioElement.currentTime;
+      const dur = audioElement.duration || 87.84;
+
+      if (timeCurrent) {
+        timeCurrent.textContent = formatTime(cur);
+      }
+
+      const pct = Math.min(100, Math.max(0, (cur / dur) * 100));
+      trackFill.style.width = `${pct}%`;
+
+      // Find active chapter
+      const activeChapter = CHAPTER_CUES.find(ch => cur >= ch.start && cur < ch.end) || CHAPTER_CUES[0];
+
+      if (chapterActiveLabel && activeChapter) {
+        chapterActiveLabel.textContent = activeChapter.title;
+      }
+
+      // Highlight active chapter pill
+      chapterPills.forEach(pill => {
+        const chNum = parseInt(pill.getAttribute('data-chapter'), 10);
+        if (activeChapter && chNum === activeChapter.chapter) {
+          pill.classList.add('active');
+        } else {
+          pill.classList.remove('active');
+        }
+      });
+    });
+
+    // Click on Scrubber Track to Seek
+    scrubberTrack.addEventListener('click', (e) => {
+      const rect = scrubberTrack.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const pct = Math.max(0, Math.min(1, clickX / rect.width));
+      const dur = audioElement.duration || 87.84;
+      audioElement.currentTime = pct * dur;
+      if (audioElement.paused) {
+        audioElement.play().catch(() => {});
+      }
+      trackCtexEvent('ctex_audio_scrub', { targetTime: audioElement.currentTime });
+    });
+
+    // Chapter Pill Click Seeking
+    chapterPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const startSec = parseFloat(pill.getAttribute('data-start') || '0');
+        const chNum = pill.getAttribute('data-chapter');
+
+        audioElement.currentTime = startSec;
+        audioElement.play().catch(() => {});
+
+        chapterPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+
+        trackCtexEvent('ctex_audio_chapter_seek', {
+          chapter: chNum,
+          timestamp: startSec
+        });
+      });
+    });
+  }
 }
