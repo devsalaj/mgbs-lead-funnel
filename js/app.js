@@ -469,9 +469,11 @@ function initCtexModule() {
   const enrollBtn = document.getElementById('ctex-enroll-btn');
   const enrollBtnText = document.getElementById('ctex-enroll-btn-text');
 
-  // Audio elements
+  // Audio elements (In-Card & Floating Controller)
   const audioElement = document.getElementById('ctex-audio-element');
   const playBtn = document.getElementById('btn-audio-play');
+  const btnAudioPrev = document.getElementById('btn-audio-prev');
+  const btnAudioNext = document.getElementById('btn-audio-next');
   const playIcon = document.getElementById('audio-icon-play');
   const pauseIcon = document.getElementById('audio-icon-pause');
   const timeCurrent = document.getElementById('player-time-current');
@@ -480,6 +482,18 @@ function initCtexModule() {
   const scrubberTrack = document.getElementById('player-scrubber-track');
   const trackFill = document.getElementById('player-track-fill');
   const chapterPills = document.querySelectorAll('.chapter-pill');
+
+  // Floating persistent audio mini-player elements
+  const fabAudioController = document.getElementById('fab-audio-controller');
+  const btnFabAudioPlay = document.getElementById('btn-fab-audio-play');
+  const btnFabAudioPrev = document.getElementById('btn-fab-audio-prev');
+  const btnFabAudioNext = document.getElementById('btn-fab-audio-next');
+  const btnFabAudioClose = document.getElementById('btn-fab-audio-close');
+  const fabAudioChapterTitle = document.getElementById('fab-audio-chapter-title');
+  const fabAudioTimeReadout = document.getElementById('fab-audio-time-readout');
+  const fabAudioTrack = document.getElementById('fab-audio-track');
+  const fabAudioTrackFill = document.getElementById('fab-audio-track-fill');
+  const fabAudioInfoWrap = document.querySelector('.fab-audio-info-wrap');
 
   // 7 Verified CTEx Tiers (All charm-priced ending in 69 or 99)
   const CTEX_TIERS = {
@@ -662,7 +676,7 @@ function initCtexModule() {
     });
   }
 
-  // --- COMPONENT 2: Single-File Chaptered Audio Player ---
+  // --- COMPONENT 2: Single-File Chaptered Audio Player & Floating Controller ---
   if (audioElement && playBtn && scrubberTrack && trackFill) {
     const formatTime = (seconds) => {
       const mins = Math.floor(seconds / 60);
@@ -670,19 +684,47 @@ function initCtexModule() {
       return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const fabPlayIcon = document.getElementById('fab-audio-icon-play');
+    const fabPauseIcon = document.getElementById('fab-audio-icon-pause');
+
     const setPlayState = (isPlaying) => {
+      // In-Card Play/Pause Button State
+      playBtn.classList.toggle('is-playing', isPlaying);
       if (isPlaying) {
-        playIcon.classList.add('d-none');
-        pauseIcon.classList.remove('d-none');
+        if (playIcon) playIcon.classList.add('d-none');
+        if (pauseIcon) pauseIcon.classList.remove('d-none');
         playBtn.setAttribute('aria-label', 'Pause Audio');
       } else {
-        playIcon.classList.remove('d-none');
-        pauseIcon.classList.add('d-none');
+        if (playIcon) playIcon.classList.remove('d-none');
+        if (pauseIcon) pauseIcon.classList.add('d-none');
         playBtn.setAttribute('aria-label', 'Play Audio');
+      }
+
+      // Floating Mini-Player Play/Pause State
+      if (btnFabAudioPlay) {
+        btnFabAudioPlay.classList.toggle('is-playing', isPlaying);
+        if (isPlaying) {
+          if (fabPlayIcon) fabPlayIcon.classList.add('d-none');
+          if (fabPauseIcon) fabPauseIcon.classList.remove('d-none');
+          btnFabAudioPlay.setAttribute('aria-label', 'Pause Audio');
+        } else {
+          if (fabPlayIcon) fabPlayIcon.classList.remove('d-none');
+          if (fabPauseIcon) fabPauseIcon.classList.add('d-none');
+          btnFabAudioPlay.setAttribute('aria-label', 'Play Audio');
+        }
+      }
+
+      // Floating Mini-Player Visibility & Pulse State
+      if (fabAudioController) {
+        fabAudioController.classList.toggle('is-playing', isPlaying);
+        if (isPlaying) {
+          fabAudioController.classList.add('is-visible');
+          fabAudioController.setAttribute('aria-hidden', 'false');
+        }
       }
     };
 
-    playBtn.addEventListener('click', () => {
+    const togglePlay = () => {
       if (audioElement.paused) {
         audioElement.play().then(() => {
           setPlayState(true);
@@ -695,14 +737,94 @@ function initCtexModule() {
         setPlayState(false);
         trackCtexEvent('ctex_audio_pause', { currentTime: audioElement.currentTime });
       }
-    });
+    };
+
+    const getCurrentChapterIndex = () => {
+      const cur = audioElement.currentTime;
+      const idx = CHAPTER_CUES.findIndex(ch => cur >= ch.start && cur < ch.end);
+      return idx >= 0 ? idx : 0;
+    };
+
+    const seekToChapter = (chapterIndex) => {
+      if (chapterIndex < 0 || chapterIndex >= CHAPTER_CUES.length) return;
+      const ch = CHAPTER_CUES[chapterIndex];
+      audioElement.currentTime = ch.start;
+      if (audioElement.paused) {
+        audioElement.play().catch(() => {});
+      }
+      chapterPills.forEach(p => p.classList.remove('active'));
+      const activePill = document.querySelector(`.chapter-pill[data-chapter="${ch.chapter}"]`);
+      if (activePill) activePill.classList.add('active');
+
+      trackCtexEvent('ctex_audio_chapter_seek', {
+        chapter: ch.chapter,
+        timestamp: ch.start,
+        title: ch.title
+      });
+    };
+
+    const skipToNextChapter = () => {
+      const currentIdx = getCurrentChapterIndex();
+      if (currentIdx < CHAPTER_CUES.length - 1) {
+        seekToChapter(currentIdx + 1);
+      } else {
+        seekToChapter(0);
+      }
+    };
+
+    const skipToPrevChapter = () => {
+      const cur = audioElement.currentTime;
+      const currentIdx = getCurrentChapterIndex();
+      if (cur - CHAPTER_CUES[currentIdx].start > 2.5) {
+        audioElement.currentTime = CHAPTER_CUES[currentIdx].start;
+      } else if (currentIdx > 0) {
+        seekToChapter(currentIdx - 1);
+      } else {
+        audioElement.currentTime = 0;
+      }
+    };
+
+    // Attach Play / Pause Listeners
+    playBtn.addEventListener('click', togglePlay);
+    if (btnFabAudioPlay) {
+      btnFabAudioPlay.addEventListener('click', togglePlay);
+    }
+
+    // Attach Previous / Next Listeners (Card & Floating Controller)
+    if (btnAudioPrev) btnAudioPrev.addEventListener('click', skipToPrevChapter);
+    if (btnAudioNext) btnAudioNext.addEventListener('click', skipToNextChapter);
+    if (btnFabAudioPrev) btnFabAudioPrev.addEventListener('click', skipToPrevChapter);
+    if (btnFabAudioNext) btnFabAudioNext.addEventListener('click', skipToNextChapter);
+
+    // Floating Controller Minimize / Close
+    if (btnFabAudioClose) {
+      btnFabAudioClose.addEventListener('click', () => {
+        if (fabAudioController) {
+          fabAudioController.classList.remove('is-visible');
+          fabAudioController.setAttribute('aria-hidden', 'true');
+        }
+      });
+    }
+
+    // Click on floating title to smoothly scroll down to #ctex section
+    if (fabAudioInfoWrap) {
+      fabAudioInfoWrap.addEventListener('click', () => {
+        const ctexSection = document.getElementById('ctex');
+        if (ctexSection) {
+          ctexSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    }
 
     audioElement.addEventListener('play', () => setPlayState(true));
     audioElement.addEventListener('pause', () => setPlayState(false));
     audioElement.addEventListener('ended', () => {
       setPlayState(false);
       trackFill.style.width = '0%';
+      if (fabAudioTrackFill) fabAudioTrackFill.style.width = '0%';
       if (timeCurrent) timeCurrent.textContent = '00:00';
+      const dur = audioElement.duration || 87.84;
+      if (fabAudioTimeReadout) fabAudioTimeReadout.textContent = `00:00 / ${formatTime(dur)}`;
       trackCtexEvent('ctex_audio_completed', {});
     });
 
@@ -710,9 +832,12 @@ function initCtexModule() {
       if (timeTotal && audioElement.duration) {
         timeTotal.textContent = formatTime(audioElement.duration);
       }
+      if (fabAudioTimeReadout && audioElement.duration) {
+        fabAudioTimeReadout.textContent = `00:00 / ${formatTime(audioElement.duration)}`;
+      }
     });
 
-    // Timeupdate sync for scrubber bar, time readouts, and chapter highlights
+    // Timeupdate sync for scrubber bar, floating mini-player, time readouts, and chapter highlights
     audioElement.addEventListener('timeupdate', () => {
       const cur = audioElement.currentTime;
       const dur = audioElement.duration || 87.84;
@@ -731,6 +856,17 @@ function initCtexModule() {
         chapterActiveLabel.textContent = activeChapter.title;
       }
 
+      // Sync Floating Mini-Player Readouts
+      if (fabAudioTimeReadout) {
+        fabAudioTimeReadout.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
+      }
+      if (fabAudioTrackFill) {
+        fabAudioTrackFill.style.width = `${pct}%`;
+      }
+      if (fabAudioChapterTitle && activeChapter) {
+        fabAudioChapterTitle.textContent = activeChapter.title;
+      }
+
       // Highlight active chapter pill
       chapterPills.forEach(pill => {
         const chNum = parseInt(pill.getAttribute('data-chapter'), 10);
@@ -742,7 +878,7 @@ function initCtexModule() {
       });
     });
 
-    // Click on Scrubber Track to Seek
+    // Click on In-Card Scrubber Track to Seek
     scrubberTrack.addEventListener('click', (e) => {
       const rect = scrubberTrack.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
@@ -752,8 +888,23 @@ function initCtexModule() {
       if (audioElement.paused) {
         audioElement.play().catch(() => {});
       }
-      trackCtexEvent('ctex_audio_scrub', { targetTime: audioElement.currentTime });
+      trackCtexEvent('ctex_audio_scrub', { targetTime: audioElement.currentTime, source: 'card_scrubber' });
     });
+
+    // Click on Floating Mini-Player Track to Seek
+    if (fabAudioTrack) {
+      fabAudioTrack.addEventListener('click', (e) => {
+        const rect = fabAudioTrack.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const pct = Math.max(0, Math.min(1, clickX / rect.width));
+        const dur = audioElement.duration || 87.84;
+        audioElement.currentTime = pct * dur;
+        if (audioElement.paused) {
+          audioElement.play().catch(() => {});
+        }
+        trackCtexEvent('ctex_audio_scrub', { targetTime: audioElement.currentTime, source: 'fab_scrubber' });
+      });
+    }
 
     // Chapter Pill Click Seeking
     chapterPills.forEach(pill => {

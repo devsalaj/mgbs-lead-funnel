@@ -21,8 +21,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <!-- Custom CSS (Cache-busted v3.2) -->
-  <link rel="stylesheet" href="css/styles.css?v=3.2">
+  <!-- Custom CSS (Cache-busted v3.6) -->
+  <link rel="stylesheet" href="css/styles.css?v=3.6">
 </head>
 <body>
 
@@ -946,18 +946,35 @@
             <div class="ctex-player-wrapper">
               
               <!-- Hidden Native Audio Element -->
-              <audio id="ctex-audio-element" preload="metadata" src="assets/audio/ctex-overview-chaptered.mp3"></audio>
+              <audio id="ctex-audio-element" preload="auto">
+                <source src="assets/audio/ctex-overview-chaptered.m4a" type="audio/mp4">
+                <source src="assets/audio/ctex-overview-chaptered.mp3" type="audio/mpeg">
+              </audio>
 
               <!-- Main Playback Controls -->
               <div class="player-controls-row">
-                <button type="button" id="btn-audio-play" class="btn-audio-play" aria-label="Play Audio">
-                  <svg id="audio-icon-play" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                  <svg id="audio-icon-pause" class="d-none" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                  </svg>
-                </button>
+                <div class="player-buttons-group">
+                  <button type="button" id="btn-audio-prev" class="btn-audio-nav" aria-label="Previous Chapter" title="Previous Chapter">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                    </svg>
+                  </button>
+
+                  <button type="button" id="btn-audio-play" class="btn-audio-play" aria-label="Play Audio" title="Play / Pause Audio">
+                    <svg id="audio-icon-play" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg id="audio-icon-pause" class="d-none" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                  </button>
+
+                  <button type="button" id="btn-audio-next" class="btn-audio-nav" aria-label="Next Chapter" title="Next Chapter">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                    </svg>
+                  </button>
+                </div>
 
                 <div class="player-progress-container">
                   <div class="player-time-row">
@@ -1284,6 +1301,52 @@
   </div>
 
 
+  <!-- Persistent Floating Audio Controller (Active during audio playback) -->
+  <aside class="fab-audio-controller" id="fab-audio-controller" aria-label="Floating Audio Mini-Player" aria-hidden="true">
+    <div class="fab-audio-top-row">
+      <div class="fab-audio-info-wrap">
+        <span class="fab-audio-pulse-dot" id="fab-audio-pulse-dot" title="Playback Status"></span>
+        <span class="fab-audio-chapter-title" id="fab-audio-chapter-title">Ch 1: Six Sigma in Careers</span>
+      </div>
+      <button type="button" id="btn-fab-audio-close" class="fab-audio-close-btn" aria-label="Minimize Audio Controller" title="Minimize Audio Controller">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="fab-audio-controls-row">
+      <div class="fab-audio-btn-group">
+        <button type="button" id="btn-fab-audio-prev" class="fab-audio-ctrl-btn" aria-label="Previous Chapter" title="Previous Chapter">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+          </svg>
+        </button>
+
+        <button type="button" id="btn-fab-audio-play" class="fab-audio-play-btn" aria-label="Play / Pause Audio" title="Play / Pause Audio">
+          <svg id="fab-audio-icon-play" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          <svg id="fab-audio-icon-pause" class="d-none" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+          </svg>
+        </button>
+
+        <button type="button" id="btn-fab-audio-next" class="fab-audio-ctrl-btn" aria-label="Next Chapter" title="Next Chapter">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="fab-audio-time-readout" id="fab-audio-time-readout">00:00 / 01:28</div>
+    </div>
+
+    <div class="fab-audio-track" id="fab-audio-track" title="Click to seek">
+      <div class="fab-audio-track-fill" id="fab-audio-track-fill"></div>
+    </div>
+  </aside>
+
   <!-- Floating Section Navigation FAB (Next/Prev Controls) -->
   <aside class="fab-section-nav" id="fab-section-nav" aria-label="Quick Page Section Navigation">
     <button type="button" id="btn-fab-prev" class="fab-nav-btn" aria-label="Previous Section" title="Previous Section">
@@ -1303,7 +1366,7 @@
   <div class="toast-container" aria-live="polite"></div>
 
   <!-- Client JavaScript -->
-  <script src="js/app.js?v=3.0"></script>
+  <script src="js/app.js?v=3.6"></script>
   <script src="js/form-handler.js"></script>
   <script src="js/content-sync.js"></script>
 </body>

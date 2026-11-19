@@ -29,3 +29,11 @@
   - [x] Test mobile responsiveness and cross-browser audio playback
   - [x] Deploy update via `npx wrangler pages deploy .`
   - [x] Verify live on `https://mgbs.com` and `https://www.mgbs.com` (HTTP 200 OK)
+
+- [ ] **Phase 6: Audio Player Refinements & Floating Mini-Controller**
+  - [ ] Add Previous and Next chapter skip buttons to the in-card audio player
+  - [ ] Enforce bulletproof play/pause icon states using explicit CSS classes and .d-none definition
+  - [ ] Add Floating Audio Controller widget docked directly above `.fab-section-nav`
+  - [ ] Wire floating controller controls (Play/Pause, Skip Next, Skip Prev, progress sync, dismiss)
+  - [ ] Verify cross-page scrolling and mobile responsiveness
+  - [ ] Deploy to Cloudflare Pages and verify live on `https://mgbs.com`

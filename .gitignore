@@ -2,3 +2,4 @@
 screenshot-*.png
 *.log
 .DS_Store
+.wrangler/

@@ -31,17 +31,20 @@ Project 1.1 integrates Dr. Shree Nanguneri's **Career Transition Excellence (CTE
   - Target audience description
   - Dynamic checkout CTA with custom data attributes (`data-tier-id`, `data-tier-price`)
 
-### Component 2: Interactive Chaptered Audio Player
+### Component 2: Interactive Chaptered Audio Player & Floating Mini-Controller
 - **Source Narration:** Studio-grade narration overview of Dr. Shree's 20+ year track record, GE Plastics operational excellence, and LinkedIn client recommendations (`assets/audio/ctex-overview-chaptered.mp3`).
 - **Cue-Point Navigation (Single File Architecture):**
-  - **Chapter 1 (0:00 - 0:30):** *Introduction & The Six Sigma Approach to Careers*
-  - **Chapter 2 (0:30 - 1:05):** *CTEx Lifecycle & Handling Transition Risks*
-  - **Chapter 3 (1:05 - 1:40):** *Real-World Track Record & LinkedIn Recommendations*
-  - **Chapter 4 (1:40 - End):** *Program Options & Next Steps*
+  - **Chapter 1 (0:00 - 0:26):** *Six Sigma in Careers*
+  - **Chapter 2 (0:26 - 0:47):** *Handling Transition Risks*
+  - **Chapter 3 (0:47 - 1:11):** *Track Record & LinkedIn*
+  - **Chapter 4 (1:11 - 1:28):** *Program Options & Action*
 - **Player Controls & Polish:**
-  - Modern, brand-styled media player with Play/Pause button, elapsed/total time readout, and interactive scrub bar.
-  - Interactive chapter pills that highlight the currently active chapter in real time as audio plays.
-  - Clicking any chapter pill seeks `audio.currentTime` instantaneously without reloading or downloading separate audio clips.
+  - Modern media player with Next & Skip chapter buttons (`#btn-audio-prev`, `#btn-audio-next`), Play/Pause state toggle with deterministic SVG display classes.
+  - Interactive chapter pills with real-time active highlights.
+- **Persistent Floating Audio Controller (Docked Above FAB):**
+  - Positioned directly above `.fab-section-nav` (`bottom: calc(2rem + 155px); right: 2rem;`).
+  - Animates in when audio starts playing, allowing the user to navigate and scroll across the entire website while controlling playback (Play/Pause, Skip Next, Skip Prev, live chapter indicator, and progress tracking).
+  - Bidirectionally synchronized with the in-card player.
 
 ### Component 3: Basic Interaction & Conversion Telemetry
 - **Lightweight Event Tracking:**
