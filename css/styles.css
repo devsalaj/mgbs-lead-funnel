@@ -2114,84 +2114,57 @@ div[id="authority"] {
   pointer-events: auto;
 }
 
-/* --- Minimized Floating Mode (Compact Round Button) --- */
+/* --- Minimized Floating Mode (Smaller Size Button) --- */
 .fab-audio-controller.is-minimized {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  padding: 0;
-  border: 2px solid var(--mgbs-gold);
-  background: rgba(11, 25, 44, 0.95);
+  width: 92px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  padding: 0.3rem 0.45rem;
+  border: 1.5px solid var(--mgbs-gold);
+  background: rgba(11, 25, 44, 0.96);
   box-shadow: 0 8px 24px rgba(11, 25, 44, 0.55), 0 0 16px rgba(229, 169, 60, 0.35);
-  cursor: pointer;
+  cursor: default;
   align-items: center;
   justify-content: center;
 }
 
 .fab-audio-controller.is-minimized .fab-audio-full-view {
-  display: none;
+  display: none !important;
 }
 
 .fab-audio-controller.is-minimized .fab-audio-mini-view {
-  display: flex;
+  display: flex !important;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   width: 100%;
   height: 100%;
 }
 
 .fab-audio-controller:not(.is-minimized) .fab-audio-mini-view {
-  display: none;
+  display: none !important;
 }
 
 .fab-audio-controller:not(.is-minimized) .fab-audio-full-view {
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
 }
 
-/* Hover Expansion to Full Player */
-.fab-audio-controller.is-minimized:hover,
-.fab-audio-controller.is-minimized.is-hover-expanded {
-  width: 270px;
-  height: auto;
-  border-radius: var(--radius-md);
-  padding: 0.75rem 0.85rem;
-  border: 1px solid rgba(229, 169, 60, 0.45);
-  box-shadow: 0 16px 40px rgba(11, 25, 44, 0.65), 0 0 24px rgba(229, 169, 60, 0.25);
-  cursor: default;
-}
-
-.fab-audio-controller.is-minimized:hover .fab-audio-mini-view,
-.fab-audio-controller.is-minimized.is-hover-expanded .fab-audio-mini-view {
-  display: none !important;
-}
-
-.fab-audio-controller.is-minimized:hover .fab-audio-full-view,
-.fab-audio-controller.is-minimized.is-hover-expanded .fab-audio-full-view {
-  display: flex !important;
-  animation: fabFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes fabFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Minimized View Elements */
+/* Minimized View Elements (Play/Pause Button + Enlarge Button) */
 .fab-audio-mini-view {
   position: relative;
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 0.4rem;
 }
 
 .fab-audio-mini-btn {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: var(--mgbs-gold);
   color: var(--mgbs-navy);
@@ -2204,11 +2177,34 @@ div[id="authority"] {
   box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
   position: relative;
   z-index: 1;
+  flex-shrink: 0;
 }
 
 .fab-audio-mini-btn:hover {
   transform: scale(1.08);
   background: #e0be48;
+}
+
+.fab-audio-enlarge-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(30, 62, 98, 0.55);
+  border: 1px solid rgba(229, 169, 60, 0.4);
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.fab-audio-enlarge-btn:hover {
+  background: #1E3E62;
+  color: var(--mgbs-gold);
+  border-color: var(--mgbs-gold);
+  transform: scale(1.1);
 }
 
 .fab-mini-pulse-ring {
@@ -2236,13 +2232,13 @@ div[id="authority"] {
 
 .fab-mini-badge-dot {
   position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 10px;
-  height: 10px;
+  top: 1px;
+  right: 1px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #64748b;
-  border: 2px solid var(--mgbs-navy);
+  border: 1.5px solid var(--mgbs-navy);
   transition: background-color 0.2s ease;
   z-index: 2;
 }
@@ -2274,6 +2270,38 @@ div[id="authority"] {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+}
+
+.fab-audio-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.fab-audio-action-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.2rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.fab-audio-action-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.fab-audio-action-btn.close-btn:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.18);
 }
 
 .fab-audio-info-wrap {
@@ -2436,14 +2464,9 @@ div[id="authority"] {
     padding: 0.65rem 0.75rem;
   }
   .fab-audio-controller.is-minimized {
-    width: 48px;
-    height: 48px;
-    padding: 0;
-  }
-  .fab-audio-controller.is-minimized:hover,
-  .fab-audio-controller.is-minimized.is-hover-expanded {
-    width: 230px;
-    padding: 0.65rem 0.75rem;
+    width: 86px;
+    height: 44px;
+    padding: 0.25rem 0.35rem;
   }
 }
 

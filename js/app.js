@@ -487,10 +487,12 @@ function initCtexModule() {
   const fabAudioController = document.getElementById('fab-audio-controller');
   const fabAudioMiniView = document.getElementById('fab-audio-mini-view');
   const btnFabMiniToggle = document.getElementById('btn-fab-mini-toggle');
+  const btnFabMiniEnlarge = document.getElementById('btn-fab-mini-enlarge');
+  const btnFabAudioMinimize = document.getElementById('btn-fab-audio-minimize');
+  const btnFabAudioClose = document.getElementById('btn-fab-audio-close');
   const btnFabAudioPlay = document.getElementById('btn-fab-audio-play');
   const btnFabAudioPrev = document.getElementById('btn-fab-audio-prev');
   const btnFabAudioNext = document.getElementById('btn-fab-audio-next');
-  const btnFabAudioClose = document.getElementById('btn-fab-audio-close');
   const fabAudioChapterTitle = document.getElementById('fab-audio-chapter-title');
   const fabAudioTimeReadout = document.getElementById('fab-audio-time-readout');
   const fabAudioTrack = document.getElementById('fab-audio-track');
@@ -798,15 +800,43 @@ function initCtexModule() {
     if (btnFabAudioPrev) btnFabAudioPrev.addEventListener('click', skipToPrevChapter);
     if (btnFabAudioNext) btnFabAudioNext.addEventListener('click', skipToNextChapter);
 
-    // Floating Controller Minimize: Collapses into rounded button without stopping audio
+    // Minimize Button: Collapses floating player to smaller size button (audio continues)
+    if (btnFabAudioMinimize) {
+      btnFabAudioMinimize.addEventListener('click', (e) => {
+        e.stopPropagation();
+        btnFabAudioMinimize.blur();
+        if (fabAudioController) {
+          fabAudioController.classList.add('is-minimized');
+          trackCtexEvent('ctex_floating_audio_minimized', {});
+        }
+      });
+    }
+
+    // Close Button: Stops the audio player altogether and dismisses the floating controller
     if (btnFabAudioClose) {
       btnFabAudioClose.addEventListener('click', (e) => {
         e.stopPropagation();
         btnFabAudioClose.blur();
+        audioElement.pause();
+        setPlayState(false);
         if (fabAudioController) {
-          fabAudioController.classList.add('is-minimized');
-          fabAudioController.classList.remove('is-hover-expanded');
-          trackCtexEvent('ctex_floating_audio_minimized', {});
+          fabAudioController.classList.remove('is-visible', 'is-minimized');
+          fabAudioController.setAttribute('aria-hidden', 'true');
+        }
+        trackCtexEvent('ctex_floating_audio_closed_stop', {
+          currentTime: audioElement.currentTime
+        });
+      });
+    }
+
+    // Enlarge Button (on smaller size button): Expands back to full floating player
+    if (btnFabMiniEnlarge) {
+      btnFabMiniEnlarge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        btnFabMiniEnlarge.blur();
+        if (fabAudioController) {
+          fabAudioController.classList.remove('is-minimized');
+          trackCtexEvent('ctex_floating_audio_enlarged', {});
         }
       });
     }
@@ -819,23 +849,17 @@ function initCtexModule() {
       });
     }
 
-    // Minimized Bubble Click (Desktop/Mobile Expand Toggle)
-    if (fabAudioMiniView) {
-      fabAudioMiniView.addEventListener('click', (e) => {
-        if (fabAudioController && fabAudioController.classList.contains('is-minimized')) {
-          fabAudioController.classList.toggle('is-hover-expanded');
+    // Scrolling automatically minimizes the full controller to the smaller size button
+    let lastAudioScrollY = window.pageYOffset || document.documentElement.scrollTop;
+    window.addEventListener('scroll', () => {
+      const currentY = window.pageYOffset || document.documentElement.scrollTop;
+      if (Math.abs(currentY - lastAudioScrollY) > 25) {
+        if (fabAudioController && fabAudioController.classList.contains('is-visible') && !fabAudioController.classList.contains('is-minimized')) {
+          fabAudioController.classList.add('is-minimized');
         }
-      });
-    }
-
-    // Auto-collapse back to rounded button when mouse leaves the expanded area
-    if (fabAudioController) {
-      fabAudioController.addEventListener('mouseleave', () => {
-        if (fabAudioController.classList.contains('is-minimized')) {
-          fabAudioController.classList.remove('is-hover-expanded');
-        }
-      });
-    }
+        lastAudioScrollY = currentY;
+      }
+    }, { passive: true });
 
     // Click on floating title to smoothly scroll down to #ctex section
     if (fabAudioInfoWrap) {
@@ -857,7 +881,7 @@ function initCtexModule() {
       const dur = audioElement.duration || 87.84;
       if (fabAudioTimeReadout) fabAudioTimeReadout.textContent = `00:00 / ${formatTime(dur)}`;
       if (fabAudioController) {
-        fabAudioController.classList.remove('is-visible', 'is-minimized', 'is-hover-expanded');
+        fabAudioController.classList.remove('is-visible', 'is-minimized');
         fabAudioController.setAttribute('aria-hidden', 'true');
       }
       trackCtexEvent('ctex_audio_completed', {});
