@@ -485,6 +485,8 @@ function initCtexModule() {
 
   // Floating persistent audio mini-player elements
   const fabAudioController = document.getElementById('fab-audio-controller');
+  const fabAudioMiniView = document.getElementById('fab-audio-mini-view');
+  const btnFabMiniToggle = document.getElementById('btn-fab-mini-toggle');
   const btnFabAudioPlay = document.getElementById('btn-fab-audio-play');
   const btnFabAudioPrev = document.getElementById('btn-fab-audio-prev');
   const btnFabAudioNext = document.getElementById('btn-fab-audio-next');
@@ -796,12 +798,41 @@ function initCtexModule() {
     if (btnFabAudioPrev) btnFabAudioPrev.addEventListener('click', skipToPrevChapter);
     if (btnFabAudioNext) btnFabAudioNext.addEventListener('click', skipToNextChapter);
 
-    // Floating Controller Minimize / Close
+    // Floating Controller Minimize: Collapses into rounded button without stopping audio
     if (btnFabAudioClose) {
-      btnFabAudioClose.addEventListener('click', () => {
+      btnFabAudioClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        btnFabAudioClose.blur();
         if (fabAudioController) {
-          fabAudioController.classList.remove('is-visible');
-          fabAudioController.setAttribute('aria-hidden', 'true');
+          fabAudioController.classList.add('is-minimized');
+          fabAudioController.classList.remove('is-hover-expanded');
+          trackCtexEvent('ctex_floating_audio_minimized', {});
+        }
+      });
+    }
+
+    // Minimized Bubble Play/Pause Toggle
+    if (btnFabMiniToggle) {
+      btnFabMiniToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePlay();
+      });
+    }
+
+    // Minimized Bubble Click (Desktop/Mobile Expand Toggle)
+    if (fabAudioMiniView) {
+      fabAudioMiniView.addEventListener('click', (e) => {
+        if (fabAudioController && fabAudioController.classList.contains('is-minimized')) {
+          fabAudioController.classList.toggle('is-hover-expanded');
+        }
+      });
+    }
+
+    // Auto-collapse back to rounded button when mouse leaves the expanded area
+    if (fabAudioController) {
+      fabAudioController.addEventListener('mouseleave', () => {
+        if (fabAudioController.classList.contains('is-minimized')) {
+          fabAudioController.classList.remove('is-hover-expanded');
         }
       });
     }
@@ -825,6 +856,10 @@ function initCtexModule() {
       if (timeCurrent) timeCurrent.textContent = '00:00';
       const dur = audioElement.duration || 87.84;
       if (fabAudioTimeReadout) fabAudioTimeReadout.textContent = `00:00 / ${formatTime(dur)}`;
+      if (fabAudioController) {
+        fabAudioController.classList.remove('is-visible', 'is-minimized', 'is-hover-expanded');
+        fabAudioController.setAttribute('aria-hidden', 'true');
+      }
       trackCtexEvent('ctex_audio_completed', {});
     });
 

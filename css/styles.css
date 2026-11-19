@@ -2094,9 +2094,17 @@ div[id="authority"] {
   opacity: 0;
   visibility: hidden;
   transform: translateY(20px) scale(0.95);
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              visibility 0.3s ease,
+              width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-radius 0.28s ease,
+              padding 0.2s ease,
+              box-shadow 0.25s ease;
   pointer-events: none;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .fab-audio-controller.is-visible {
@@ -2104,6 +2112,161 @@ div[id="authority"] {
   visibility: visible;
   transform: translateY(0) scale(1);
   pointer-events: auto;
+}
+
+/* --- Minimized Floating Mode (Compact Round Button) --- */
+.fab-audio-controller.is-minimized {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  padding: 0;
+  border: 2px solid var(--mgbs-gold);
+  background: rgba(11, 25, 44, 0.95);
+  box-shadow: 0 8px 24px rgba(11, 25, 44, 0.55), 0 0 16px rgba(229, 169, 60, 0.35);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab-audio-controller.is-minimized .fab-audio-full-view {
+  display: none;
+}
+
+.fab-audio-controller.is-minimized .fab-audio-mini-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.fab-audio-controller:not(.is-minimized) .fab-audio-mini-view {
+  display: none;
+}
+
+.fab-audio-controller:not(.is-minimized) .fab-audio-full-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* Hover Expansion to Full Player */
+.fab-audio-controller.is-minimized:hover,
+.fab-audio-controller.is-minimized.is-hover-expanded {
+  width: 270px;
+  height: auto;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(229, 169, 60, 0.45);
+  box-shadow: 0 16px 40px rgba(11, 25, 44, 0.65), 0 0 24px rgba(229, 169, 60, 0.25);
+  cursor: default;
+}
+
+.fab-audio-controller.is-minimized:hover .fab-audio-mini-view,
+.fab-audio-controller.is-minimized.is-hover-expanded .fab-audio-mini-view {
+  display: none !important;
+}
+
+.fab-audio-controller.is-minimized:hover .fab-audio-full-view,
+.fab-audio-controller.is-minimized.is-hover-expanded .fab-audio-full-view {
+  display: flex !important;
+  animation: fabFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fabFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Minimized View Elements */
+.fab-audio-mini-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab-audio-mini-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--mgbs-gold);
+  color: var(--mgbs-navy);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+  position: relative;
+  z-index: 1;
+}
+
+.fab-audio-mini-btn:hover {
+  transform: scale(1.08);
+  background: #e0be48;
+}
+
+.fab-mini-pulse-ring {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(229, 169, 60, 0.5);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.fab-audio-controller.is-playing .fab-mini-pulse-ring {
+  opacity: 1;
+  animation: audioPulseRing 2s infinite;
+}
+
+@keyframes audioPulseRing {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 0.2; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+.fab-mini-badge-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #64748b;
+  border: 2px solid var(--mgbs-navy);
+  transition: background-color 0.2s ease;
+  z-index: 2;
+}
+
+.fab-audio-controller.is-playing .fab-mini-badge-dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.9);
+}
+
+/* Explicit Mini View Play/Pause icon toggles */
+.fab-audio-controller.is-playing #fab-mini-icon-play {
+  display: none !important;
+}
+
+.fab-audio-controller.is-playing #fab-mini-icon-pause {
+  display: block !important;
+}
+
+.fab-audio-controller:not(.is-playing) #fab-mini-icon-play {
+  display: block !important;
+}
+
+.fab-audio-controller:not(.is-playing) #fab-mini-icon-pause {
+  display: none !important;
 }
 
 .fab-audio-top-row {
@@ -2269,6 +2432,16 @@ div[id="authority"] {
   .fab-audio-controller {
     bottom: calc(1.25rem + 135px);
     right: 1.25rem;
+    width: 230px;
+    padding: 0.65rem 0.75rem;
+  }
+  .fab-audio-controller.is-minimized {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+  }
+  .fab-audio-controller.is-minimized:hover,
+  .fab-audio-controller.is-minimized.is-hover-expanded {
     width: 230px;
     padding: 0.65rem 0.75rem;
   }

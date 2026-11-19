@@ -21,8 +21,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <!-- Custom CSS (Cache-busted v3.6) -->
-  <link rel="stylesheet" href="css/styles.css?v=3.6">
+  <!-- Custom CSS (Cache-busted v3.8) -->
+  <link rel="stylesheet" href="css/styles.css?v=3.8">
 </head>
 <body>
 
@@ -1303,47 +1303,65 @@
 
   <!-- Persistent Floating Audio Controller (Active during audio playback) -->
   <aside class="fab-audio-controller" id="fab-audio-controller" aria-label="Floating Audio Mini-Player" aria-hidden="true">
-    <div class="fab-audio-top-row">
-      <div class="fab-audio-info-wrap">
-        <span class="fab-audio-pulse-dot" id="fab-audio-pulse-dot" title="Playback Status"></span>
-        <span class="fab-audio-chapter-title" id="fab-audio-chapter-title">Ch 1: Six Sigma in Careers</span>
-      </div>
-      <button type="button" id="btn-fab-audio-close" class="fab-audio-close-btn" aria-label="Minimize Audio Controller" title="Minimize Audio Controller">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+    
+    <!-- MINIMIZED VIEW: Rounded Play/Pause Button (Expands on Hover) -->
+    <div class="fab-audio-mini-view" id="fab-audio-mini-view" title="MGBS Audio • Hover to Expand">
+      <button type="button" class="fab-audio-mini-btn" id="btn-fab-mini-toggle" aria-label="Play / Pause Audio" title="Play / Pause Audio">
+        <span class="fab-mini-pulse-ring"></span>
+        <svg id="fab-mini-icon-play" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        <svg id="fab-mini-icon-pause" class="d-none" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
         </svg>
       </button>
+      <span class="fab-mini-badge-dot"></span>
     </div>
 
-    <div class="fab-audio-controls-row">
-      <div class="fab-audio-btn-group">
-        <button type="button" id="btn-fab-audio-prev" class="fab-audio-ctrl-btn" aria-label="Previous Chapter" title="Previous Chapter">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-          </svg>
-        </button>
-
-        <button type="button" id="btn-fab-audio-play" class="fab-audio-play-btn" aria-label="Play / Pause Audio" title="Play / Pause Audio">
-          <svg id="fab-audio-icon-play" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-          <svg id="fab-audio-icon-pause" class="d-none" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-          </svg>
-        </button>
-
-        <button type="button" id="btn-fab-audio-next" class="fab-audio-ctrl-btn" aria-label="Next Chapter" title="Next Chapter">
-          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+    <!-- FULL EXPANDED VIEW: Complete Audio Controller -->
+    <div class="fab-audio-full-view" id="fab-audio-full-view">
+      <div class="fab-audio-top-row">
+        <div class="fab-audio-info-wrap">
+          <span class="fab-audio-pulse-dot" id="fab-audio-pulse-dot" title="Playback Status"></span>
+          <span class="fab-audio-chapter-title" id="fab-audio-chapter-title">Ch 1: Six Sigma in Careers</span>
+        </div>
+        <button type="button" id="btn-fab-audio-close" class="fab-audio-close-btn" aria-label="Minimize Audio Controller" title="Minimize to Rounded Button">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
 
-      <div class="fab-audio-time-readout" id="fab-audio-time-readout">00:00 / 01:28</div>
-    </div>
+      <div class="fab-audio-controls-row">
+        <div class="fab-audio-btn-group">
+          <button type="button" id="btn-fab-audio-prev" class="fab-audio-ctrl-btn" aria-label="Previous Chapter" title="Previous Chapter">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
 
-    <div class="fab-audio-track" id="fab-audio-track" title="Click to seek">
-      <div class="fab-audio-track-fill" id="fab-audio-track-fill"></div>
+          <button type="button" id="btn-fab-audio-play" class="fab-audio-play-btn" aria-label="Play / Pause Audio" title="Play / Pause Audio">
+            <svg id="fab-audio-icon-play" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg id="fab-audio-icon-pause" class="d-none" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+          </button>
+
+          <button type="button" id="btn-fab-audio-next" class="fab-audio-ctrl-btn" aria-label="Next Chapter" title="Next Chapter">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="fab-audio-time-readout" id="fab-audio-time-readout">00:00 / 01:28</div>
+      </div>
+
+      <div class="fab-audio-track" id="fab-audio-track" title="Click to seek">
+        <div class="fab-audio-track-fill" id="fab-audio-track-fill"></div>
+      </div>
     </div>
   </aside>
 
@@ -1366,7 +1384,7 @@
   <div class="toast-container" aria-live="polite"></div>
 
   <!-- Client JavaScript -->
-  <script src="js/app.js?v=3.6"></script>
+  <script src="js/app.js?v=3.8"></script>
   <script src="js/form-handler.js"></script>
   <script src="js/content-sync.js"></script>
 </body>
