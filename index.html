@@ -1305,6 +1305,19 @@
     
     <!-- MINIMIZED VIEW: Smaller Size Capsule with Play/Pause & Enlarge Button -->
     <div class="fab-audio-mini-view" id="fab-audio-mini-view">
+      <div
+        class="fab-drag-handle fab-drag-handle-mini"
+        id="drag-handle-audio-mini"
+        title="Drag to reposition"
+        aria-label="Drag to reposition audio controller"
+      >
+        <svg width="6" height="14" viewBox="0 0 6 14" fill="currentColor" aria-hidden="true">
+          <circle cx="3" cy="3" r="1.2"/>
+          <circle cx="3" cy="7" r="1.2"/>
+          <circle cx="3" cy="11" r="1.2"/>
+        </svg>
+      </div>
+
       <button type="button" class="fab-audio-mini-btn" id="btn-fab-mini-toggle" aria-label="Play / Pause Audio" title="Play / Pause Audio">
         <span class="fab-mini-pulse-ring"></span>
         <svg id="fab-mini-icon-play" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
@@ -1330,6 +1343,21 @@
         <div class="fab-audio-info-wrap">
           <span class="fab-audio-pulse-dot" id="fab-audio-pulse-dot" title="Playback Status"></span>
           <span class="fab-audio-chapter-title" id="fab-audio-chapter-title">Ch 1: Six Sigma in Careers</span>
+        </div>
+        <div
+          class="fab-drag-handle fab-drag-handle-audio"
+          id="drag-handle-audio-full"
+          title="Drag to reposition"
+          aria-label="Drag to reposition audio controller"
+        >
+          <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" aria-hidden="true">
+            <circle cx="3" cy="2" r="1.2"/>
+            <circle cx="7" cy="2" r="1.2"/>
+            <circle cx="11" cy="2" r="1.2"/>
+            <circle cx="3" cy="8" r="1.2"/>
+            <circle cx="7" cy="8" r="1.2"/>
+            <circle cx="11" cy="8" r="1.2"/>
+          </svg>
         </div>
         <div class="fab-audio-header-actions">
           <button type="button" id="btn-fab-audio-minimize" class="fab-audio-action-btn" aria-label="Minimize Audio Player" title="Minimize to Smaller Button">
@@ -1380,12 +1408,27 @@
 
   <!-- Floating Section Navigation FAB (Next/Prev Controls) -->
   <aside class="fab-section-nav" id="fab-section-nav" aria-label="Quick Page Section Navigation">
+    <div
+      class="fab-drag-handle fab-drag-handle-section"
+      id="drag-handle-section-nav"
+      title="Drag to reposition"
+      aria-label="Drag to reposition section navigation"
+    >
+      <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" aria-hidden="true">
+        <circle cx="3" cy="2" r="1.2"/>
+        <circle cx="7" cy="2" r="1.2"/>
+        <circle cx="11" cy="2" r="1.2"/>
+        <circle cx="3" cy="8" r="1.2"/>
+        <circle cx="7" cy="8" r="1.2"/>
+        <circle cx="11" cy="8" r="1.2"/>
+      </svg>
+    </div>
     <button type="button" id="btn-fab-prev" class="fab-nav-btn" aria-label="Previous Section" title="Previous Section">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" width="18" height="18">
         <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
       </svg>
     </button>
-    <span id="fab-section-indicator" class="fab-section-indicator fab-drag-handle" title="Drag to reposition">01 / 06</span>
+    <span id="fab-section-indicator" class="fab-section-indicator">01 / 06</span>
     <button type="button" id="btn-fab-next" class="fab-nav-btn" aria-label="Next Section" title="Next Section">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" width="18" height="18">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>

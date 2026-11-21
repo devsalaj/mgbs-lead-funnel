@@ -703,77 +703,181 @@ function initSectionPresentationEngine() {
   });
 
   /**
-   * Draggable FAB Handle Support (Section FAB & Floating Audio Player)
+   * ==========================================================================
+   * Persistent, Handle-Only Dragging Engine (Section FAB & Audio Controller)
+   * ==========================================================================
    */
-  function initDraggableFAB(fabEl, handleEl) {
-    if (!fabEl || !handleEl) return;
+  function makeElementDraggable(element, handles, storageKey) {
+    if (!element) return;
+    const handleList = (Array.isArray(handles) ? handles : [handles]).filter(Boolean);
+    if (handleList.length === 0) return;
+    if (element._isDraggableInitialized) return;
+    element._isDraggableInitialized = true;
+
+    const MARGIN = 12;
+
+    function getClampedCoordinates(targetX, targetY) {
+      const minX = MARGIN;
+      const minY = MARGIN;
+      const width = element.offsetWidth || 50;
+      const height = element.offsetHeight || 50;
+      const maxX = Math.max(minX, window.innerWidth - width - MARGIN);
+      const maxY = Math.max(minY, window.innerHeight - height - MARGIN);
+      return {
+        x: Math.min(Math.max(targetX, minX), maxX),
+        y: Math.min(Math.max(targetY, minY), maxY)
+      };
+    }
+
+    function savePosition(x, y) {
+      if (!storageKey) return;
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({ left: Math.round(x), top: Math.round(y) }));
+        element._hasCustomPos = true;
+      } catch (err) {}
+    }
+
+    function restoreSavedPosition() {
+      if (!storageKey) return;
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (!saved) return;
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.left === 'number' && typeof parsed.top === 'number' && !isNaN(parsed.left) && !isNaN(parsed.top)) {
+          const clamped = getClampedCoordinates(parsed.left, parsed.top);
+          element.style.left = `${clamped.x}px`;
+          element.style.top = `${clamped.y}px`;
+          element.style.right = 'auto';
+          element.style.bottom = 'auto';
+          element._hasCustomPos = true;
+        }
+      } catch (err) {}
+    }
+
+    restoreSavedPosition();
 
     let isDragging = false;
+    let hasMoved = false;
     let startX = 0;
     let startY = 0;
     let initialLeft = 0;
     let initialTop = 0;
-    let hasMoved = false;
+    let activeHandle = null;
+    let activePointerId = null;
 
-    handleEl.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0) return; // primary button only
-      isDragging = true;
-      hasMoved = false;
-      startX = e.clientX;
-      startY = e.clientY;
+    handleList.forEach((handle) => {
+      handle.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return; // Primary click only
+        isDragging = true;
+        hasMoved = false;
+        activeHandle = handle;
+        activePointerId = e.pointerId;
+        startX = e.clientX;
+        startY = e.clientY;
 
-      const rect = fabEl.getBoundingClientRect();
-      initialLeft = rect.left;
-      initialTop = rect.top;
+        const rect = element.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
 
-      try {
-        handleEl.setPointerCapture(e.pointerId);
-      } catch (err) {}
-    });
+        // Switch to explicit left/top positioning immediately
+        element.style.left = `${initialLeft}px`;
+        element.style.top = `${initialTop}px`;
+        element.style.right = 'auto';
+        element.style.bottom = 'auto';
 
-    handleEl.addEventListener('pointermove', (e) => {
-      if (!isDragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
+        element.classList.add('is-dragging');
 
-      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
-        hasMoved = true;
-      }
+        try {
+          handle.setPointerCapture(e.pointerId);
+        } catch (err) {}
 
-      if (hasMoved) {
         e.preventDefault();
-        const newLeft = Math.max(10, Math.min(window.innerWidth - fabEl.offsetWidth - 10, initialLeft + dx));
-        const newTop = Math.max(75, Math.min(window.innerHeight - fabEl.offsetHeight - 10, initialTop + dy));
+        e.stopPropagation();
+      });
 
-        fabEl.style.left = `${newLeft}px`;
-        fabEl.style.top = `${newTop}px`;
-        fabEl.style.right = 'auto';
-        fabEl.style.bottom = 'auto';
-      }
+      handle.addEventListener('pointermove', (e) => {
+        if (!isDragging || activePointerId !== e.pointerId) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        if (!hasMoved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+          hasMoved = true;
+        }
+
+        if (hasMoved) {
+          e.preventDefault();
+          e.stopPropagation();
+          const clamped = getClampedCoordinates(initialLeft + dx, initialTop + dy);
+          element.style.left = `${clamped.x}px`;
+          element.style.top = `${clamped.y}px`;
+        }
+      });
+
+      const handlePointerEnd = (e) => {
+        if (!isDragging || (activePointerId !== null && activePointerId !== e.pointerId)) return;
+        isDragging = false;
+        element.classList.remove('is-dragging');
+
+        try {
+          if (activeHandle && activePointerId !== null) {
+            activeHandle.releasePointerCapture(activePointerId);
+          }
+        } catch (err) {}
+
+        if (hasMoved) {
+          const curLeft = parseFloat(element.style.left);
+          const curTop = parseFloat(element.style.top);
+          if (!isNaN(curLeft) && !isNaN(curTop)) {
+            savePosition(curLeft, curTop);
+          }
+        }
+
+        activeHandle = null;
+        activePointerId = null;
+      };
+
+      handle.addEventListener('pointerup', handlePointerEnd);
+      handle.addEventListener('pointercancel', handlePointerEnd);
+      handle.addEventListener('lostpointercapture', handlePointerEnd);
     });
 
-    const endDrag = (e) => {
-      if (!isDragging) return;
-      isDragging = false;
-      try {
-        handleEl.releasePointerCapture(e.pointerId);
-      } catch (err) {}
+    element.recheckBounds = function() {
+      if (!element._hasCustomPos) return;
+      const rect = element.getBoundingClientRect();
+      const clamped = getClampedCoordinates(rect.left, rect.top);
+      element.style.left = `${clamped.x}px`;
+      element.style.top = `${clamped.y}px`;
+      element.style.right = 'auto';
+      element.style.bottom = 'auto';
+      savePosition(clamped.x, clamped.y);
     };
 
-    handleEl.addEventListener('pointerup', endDrag);
-    handleEl.addEventListener('pointercancel', endDrag);
+    let resizeTimer = null;
+    const onResize = () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!isDragging && element._hasCustomPos) {
+          element.recheckBounds();
+        }
+      }, 50);
+    };
+
+    window.addEventListener('resize', onResize, { passive: true });
+    window.addEventListener('orientationchange', onResize, { passive: true });
   }
 
-  // Initialize drag on Section Navigation indicator
-  if (fabNav && fabIndicator) {
-    initDraggableFAB(fabNav, fabIndicator);
+  // Initialize Section Navigation FAB dragging (Handle only)
+  const handleNav = document.getElementById('drag-handle-section-nav');
+  if (fabNav && handleNav) {
+    makeElementDraggable(fabNav, handleNav, 'mgbs_pos_section_nav');
   }
 
-  // Initialize drag on Floating Audio Controller
+  // Initialize Floating Audio Controller dragging (Full & Mini handles)
   const fabAudio = document.getElementById('fab-audio-controller');
-  const fabAudioHeader = document.querySelector('.fab-audio-info-wrap');
-  if (fabAudio && fabAudioHeader) {
-    initDraggableFAB(fabAudio, fabAudioHeader);
+  const handleAudioFull = document.getElementById('drag-handle-audio-full');
+  const handleAudioMini = document.getElementById('drag-handle-audio-mini');
+  if (fabAudio) {
+    makeElementDraggable(fabAudio, [handleAudioFull, handleAudioMini], 'mgbs_pos_audio_fab');
   }
 
   /**
@@ -1066,6 +1170,9 @@ function initCtexModule() {
         if (isPlaying) {
           fabAudioController.classList.add('is-visible');
           fabAudioController.setAttribute('aria-hidden', 'false');
+          if (typeof fabAudioController.recheckBounds === 'function') {
+            requestAnimationFrame(() => fabAudioController.recheckBounds());
+          }
         }
       }
     };
@@ -1150,6 +1257,9 @@ function initCtexModule() {
         if (fabAudioController) {
           fabAudioController.classList.add('is-minimized');
           trackCtexEvent('ctex_floating_audio_minimized', {});
+          if (typeof fabAudioController.recheckBounds === 'function') {
+            requestAnimationFrame(() => fabAudioController.recheckBounds());
+          }
         }
       });
     }
@@ -1179,6 +1289,9 @@ function initCtexModule() {
         if (fabAudioController) {
           fabAudioController.classList.remove('is-minimized');
           trackCtexEvent('ctex_floating_audio_enlarged', {});
+          if (typeof fabAudioController.recheckBounds === 'function') {
+            requestAnimationFrame(() => fabAudioController.recheckBounds());
+          }
         }
       });
     }
@@ -1198,6 +1311,9 @@ function initCtexModule() {
       if (Math.abs(currentY - lastAudioScrollY) > 25) {
         if (fabAudioController && fabAudioController.classList.contains('is-visible') && !fabAudioController.classList.contains('is-minimized')) {
           fabAudioController.classList.add('is-minimized');
+          if (typeof fabAudioController.recheckBounds === 'function') {
+            requestAnimationFrame(() => fabAudioController.recheckBounds());
+          }
         }
         lastAudioScrollY = currentY;
       }
