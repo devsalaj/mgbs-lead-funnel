@@ -1302,69 +1302,13 @@
 
   <!-- Persistent Floating Audio Controller (Active during audio playback) -->
   <aside class="fab-audio-controller" id="fab-audio-controller" aria-label="Floating Audio Mini-Player" aria-hidden="true">
-    
-    <!-- MINIMIZED VIEW: Smaller Size Capsule with Play/Pause & Enlarge Button -->
-    <div class="fab-audio-mini-view" id="fab-audio-mini-view">
-      <div
-        class="fab-drag-handle fab-drag-handle-mini"
-        id="drag-handle-audio-mini"
-        title="Drag to reposition"
-        aria-label="Drag to reposition audio controller"
-      >
-        <svg width="6" height="14" viewBox="0 0 6 14" fill="currentColor" aria-hidden="true">
-          <circle cx="3" cy="3" r="1.2"/>
-          <circle cx="3" cy="7" r="1.2"/>
-          <circle cx="3" cy="11" r="1.2"/>
-        </svg>
-      </div>
-
-      <button type="button" class="fab-audio-mini-btn" id="btn-fab-mini-toggle" aria-label="Play / Pause Audio" title="Play / Pause Audio">
-        <span class="fab-mini-pulse-ring"></span>
-        <svg id="fab-mini-icon-play" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M8 5v14l11-7z"/>
-        </svg>
-        <svg id="fab-mini-icon-pause" class="d-none" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-        </svg>
-      </button>
-
-      <button type="button" class="fab-audio-enlarge-btn" id="btn-fab-mini-enlarge" aria-label="Enlarge Audio Player" title="Enlarge Floating Player">
-        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4h4m8 0h4v4M4 16v4h4m8 0h4v-4"/>
-        </svg>
-      </button>
-
-      <span class="fab-mini-badge-dot"></span>
-    </div>
-
-    <!-- FULL EXPANDED VIEW: Complete Audio Controller -->
     <div class="fab-audio-full-view" id="fab-audio-full-view">
       <div class="fab-audio-top-row">
         <div class="fab-audio-info-wrap">
           <span class="fab-audio-pulse-dot" id="fab-audio-pulse-dot" title="Playback Status"></span>
           <span class="fab-audio-chapter-title" id="fab-audio-chapter-title">Ch 1: Six Sigma in Careers</span>
         </div>
-        <div
-          class="fab-drag-handle fab-drag-handle-audio"
-          id="drag-handle-audio-full"
-          title="Drag to reposition"
-          aria-label="Drag to reposition audio controller"
-        >
-          <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" aria-hidden="true">
-            <circle cx="3" cy="2" r="1.2"/>
-            <circle cx="7" cy="2" r="1.2"/>
-            <circle cx="11" cy="2" r="1.2"/>
-            <circle cx="3" cy="8" r="1.2"/>
-            <circle cx="7" cy="8" r="1.2"/>
-            <circle cx="11" cy="8" r="1.2"/>
-          </svg>
-        </div>
         <div class="fab-audio-header-actions">
-          <button type="button" id="btn-fab-audio-minimize" class="fab-audio-action-btn" aria-label="Minimize Audio Player" title="Minimize to Smaller Button">
-            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5"/>
-            </svg>
-          </button>
           <button type="button" id="btn-fab-audio-close" class="fab-audio-action-btn close-btn" aria-label="Close and Stop Audio" title="Close and Stop Audio">
             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -1408,21 +1352,6 @@
 
   <!-- Floating Section Navigation FAB (Next/Prev Controls) -->
   <aside class="fab-section-nav" id="fab-section-nav" aria-label="Quick Page Section Navigation">
-    <div
-      class="fab-drag-handle fab-drag-handle-section"
-      id="drag-handle-section-nav"
-      title="Drag to reposition"
-      aria-label="Drag to reposition section navigation"
-    >
-      <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" aria-hidden="true">
-        <circle cx="3" cy="2" r="1.2"/>
-        <circle cx="7" cy="2" r="1.2"/>
-        <circle cx="11" cy="2" r="1.2"/>
-        <circle cx="3" cy="8" r="1.2"/>
-        <circle cx="7" cy="8" r="1.2"/>
-        <circle cx="11" cy="8" r="1.2"/>
-      </svg>
-    </div>
     <button type="button" id="btn-fab-prev" class="fab-nav-btn" aria-label="Previous Section" title="Previous Section">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" width="18" height="18">
         <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>

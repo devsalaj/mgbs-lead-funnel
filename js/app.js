@@ -426,13 +426,7 @@ function initSectionPresentationEngine() {
       }
     }
 
-    // 5. Auto-minimize floating audio controller if open and visible
-    const fabAudio = document.getElementById('fab-audio-controller');
-    if (fabAudio && fabAudio.classList.contains('is-visible') && !fabAudio.classList.contains('is-minimized')) {
-      fabAudio.classList.add('is-minimized');
-    }
-
-    // 6. Non-intrusive URL Hash Update
+    // 5. Non-intrusive URL Hash Update
     if (window.location.hash !== `#${currentId}`) {
       try {
         history.replaceState(null, '', `#${currentId}`);
@@ -541,14 +535,6 @@ function initSectionPresentationEngine() {
           header.classList.add('scrolled');
         } else {
           header.classList.remove('scrolled');
-        }
-      }
-
-      // Auto-minimize floating audio controller if user scrolls inside oversized chapter
-      const fabAudio = document.getElementById('fab-audio-controller');
-      if (fabAudio && fabAudio.classList.contains('is-visible') && !fabAudio.classList.contains('is-minimized')) {
-        if (ch.scrollTop > 30) {
-          fabAudio.classList.add('is-minimized');
         }
       }
 
@@ -825,7 +811,7 @@ function initSectionPresentationEngine() {
 
       handle.addEventListener('pointerdown', (e) => {
         // If clicking on a button, input, or interactive control, let the button handle it
-        if (e.target && e.target.closest('button, input, select, textarea, .fab-nav-btn, .fab-audio-ctrl-btn, .fab-audio-play-btn, .fab-audio-action-btn, .fab-audio-mini-btn, .fab-audio-enlarge-btn, .fab-audio-track')) {
+        if (e.target && e.target.closest('button, input, select, textarea, .fab-nav-btn, .fab-audio-ctrl-btn, .fab-audio-play-btn, .fab-audio-action-btn, .fab-audio-track')) {
           return;
         }
 
@@ -891,20 +877,15 @@ function initSectionPresentationEngine() {
     window.addEventListener('orientationchange', onResize, { passive: true });
   }
 
-  // Initialize Section Navigation FAB dragging (Top Handle, Indicator & Pill body)
-  const handleNav = document.getElementById('drag-handle-section-nav');
+  // Initialize Section Navigation FAB dragging (Grabbing anywhere on the pill)
   if (fabNav) {
-    makeElementDraggable(fabNav, [handleNav, fabIndicator, fabNav], 'mgbs_pos_section_nav');
+    makeElementDraggable(fabNav, fabNav, 'mgbs_pos_section_nav');
   }
 
-  // Initialize Floating Audio Controller dragging (Full & Mini handles, Header & Mini body)
+  // Initialize Floating Audio Controller dragging (Grabbing anywhere on the controller)
   const fabAudio = document.getElementById('fab-audio-controller');
-  const handleAudioFull = document.getElementById('drag-handle-audio-full');
-  const handleAudioMini = document.getElementById('drag-handle-audio-mini');
-  const fabAudioHeader = document.querySelector('.fab-audio-info-wrap');
-  const fabAudioMiniView = document.getElementById('fab-audio-mini-view');
   if (fabAudio) {
-    makeElementDraggable(fabAudio, [handleAudioFull, handleAudioMini, fabAudioHeader, fabAudioMiniView], 'mgbs_pos_audio_fab');
+    makeElementDraggable(fabAudio, fabAudio, 'mgbs_pos_audio_fab');
   }
 
   /**
@@ -956,12 +937,8 @@ function initCtexModule() {
   const trackFill = document.getElementById('player-track-fill');
   const chapterPills = document.querySelectorAll('.chapter-pill');
 
-  // Floating persistent audio mini-player elements
+  // Floating persistent audio player elements
   const fabAudioController = document.getElementById('fab-audio-controller');
-  const fabAudioMiniView = document.getElementById('fab-audio-mini-view');
-  const btnFabMiniToggle = document.getElementById('btn-fab-mini-toggle');
-  const btnFabMiniEnlarge = document.getElementById('btn-fab-mini-enlarge');
-  const btnFabAudioMinimize = document.getElementById('btn-fab-audio-minimize');
   const btnFabAudioClose = document.getElementById('btn-fab-audio-close');
   const btnFabAudioPlay = document.getElementById('btn-fab-audio-play');
   const btnFabAudioPrev = document.getElementById('btn-fab-audio-prev');
@@ -1276,21 +1253,6 @@ function initCtexModule() {
     if (btnFabAudioPrev) btnFabAudioPrev.addEventListener('click', skipToPrevChapter);
     if (btnFabAudioNext) btnFabAudioNext.addEventListener('click', skipToNextChapter);
 
-    // Minimize Button: Collapses floating player to smaller size button (audio continues)
-    if (btnFabAudioMinimize) {
-      btnFabAudioMinimize.addEventListener('click', (e) => {
-        e.stopPropagation();
-        btnFabAudioMinimize.blur();
-        if (fabAudioController) {
-          fabAudioController.classList.add('is-minimized');
-          trackCtexEvent('ctex_floating_audio_minimized', {});
-          if (typeof fabAudioController.recheckBounds === 'function') {
-            requestAnimationFrame(() => fabAudioController.recheckBounds());
-          }
-        }
-      });
-    }
-
     // Close Button: Stops the audio player altogether and dismisses the floating controller
     if (btnFabAudioClose) {
       btnFabAudioClose.addEventListener('click', (e) => {
@@ -1299,7 +1261,7 @@ function initCtexModule() {
         audioElement.pause();
         setPlayState(false);
         if (fabAudioController) {
-          fabAudioController.classList.remove('is-visible', 'is-minimized');
+          fabAudioController.classList.remove('is-visible');
           fabAudioController.setAttribute('aria-hidden', 'true');
         }
         trackCtexEvent('ctex_floating_audio_closed_stop', {
@@ -1307,44 +1269,6 @@ function initCtexModule() {
         });
       });
     }
-
-    // Enlarge Button (on smaller size button): Expands back to full floating player
-    if (btnFabMiniEnlarge) {
-      btnFabMiniEnlarge.addEventListener('click', (e) => {
-        e.stopPropagation();
-        btnFabMiniEnlarge.blur();
-        if (fabAudioController) {
-          fabAudioController.classList.remove('is-minimized');
-          trackCtexEvent('ctex_floating_audio_enlarged', {});
-          if (typeof fabAudioController.recheckBounds === 'function') {
-            requestAnimationFrame(() => fabAudioController.recheckBounds());
-          }
-        }
-      });
-    }
-
-    // Minimized Bubble Play/Pause Toggle
-    if (btnFabMiniToggle) {
-      btnFabMiniToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        togglePlay();
-      });
-    }
-
-    // Scrolling automatically minimizes the full controller to the smaller size button
-    let lastAudioScrollY = window.pageYOffset || document.documentElement.scrollTop;
-    window.addEventListener('scroll', () => {
-      const currentY = window.pageYOffset || document.documentElement.scrollTop;
-      if (Math.abs(currentY - lastAudioScrollY) > 25) {
-        if (fabAudioController && fabAudioController.classList.contains('is-visible') && !fabAudioController.classList.contains('is-minimized')) {
-          fabAudioController.classList.add('is-minimized');
-          if (typeof fabAudioController.recheckBounds === 'function') {
-            requestAnimationFrame(() => fabAudioController.recheckBounds());
-          }
-        }
-        lastAudioScrollY = currentY;
-      }
-    }, { passive: true });
 
     // Click on floating title to smoothly navigate to #ctex section
     if (fabAudioInfoWrap) {
@@ -1370,7 +1294,7 @@ function initCtexModule() {
       const dur = audioElement.duration || 87.84;
       if (fabAudioTimeReadout) fabAudioTimeReadout.textContent = `00:00 / ${formatTime(dur)}`;
       if (fabAudioController) {
-        fabAudioController.classList.remove('is-visible', 'is-minimized');
+        fabAudioController.classList.remove('is-visible');
         fabAudioController.setAttribute('aria-hidden', 'true');
       }
       trackCtexEvent('ctex_audio_completed', {});
