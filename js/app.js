@@ -18,9 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initProjectsDropdown();
   initStatsCounters();
   initDiagnosticEngine();
-  initSmoothScroll();
-  initScrollSpy();
-  initSectionNavFab();
+  initSectionPresentationEngine();
   initCtexModule();
 });
 
@@ -31,16 +29,14 @@ function initHeader() {
   const header = document.querySelector('.site-header');
   if (!header) return;
 
-  const handleScroll = () => {
-    if (window.scrollY > 20) {
+  // Header scroll state is maintained dynamically by the presentation engine
+  window.MGBS_UpdateHeaderState = function(isScrolled) {
+    if (isScrolled) {
       header.classList.add('scrolled');
     } else {
       header.classList.remove('scrolled');
     }
   };
-
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  handleScroll();
 }
 
 /**
@@ -281,178 +277,524 @@ function initDiagnosticEngine() {
 }
 
 /**
- * Smooth Anchor Navigation with Offset
+ * ============================================================================
+ * Controlled Section Presentation Engine (Cinematic Chapter Flow)
+ * 
+ * Capabilities:
+ * - Unified navigation engine across mouse wheel, FAB, header links, keys, touch
+ * - Forward transitions enter from bottom (translateY 45px -> 0, opacity 0 -> 1)
+ * - Backward transitions reverse smoothly (translateY -35px -> 0, opacity 0 -> 1)
+ * - Adaptive internal scrolling for oversized chapters (Diagnostics, CTEx, Consult)
+ * - Wheel cooldown, boundary detent & trackpad gesture protection
+ * - Deep linking, hash update (replaceState) & popstate support
+ * - Draggable FAB handle support with touch/pointer suppression
+ * ============================================================================
  */
-function initSmoothScroll() {
-  const anchorLinks = document.querySelectorAll('a[href^="#"]:not([href="#"])');
-
-  anchorLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-      const targetId = link.getAttribute('href').substring(1);
-      const targetElement = document.getElementById(targetId);
-
-      if (targetElement) {
-        e.preventDefault();
-        const header = document.querySelector('.site-header');
-        const headerOffset = header ? header.offsetHeight + 10 : 80;
-        const elementPosition = targetElement.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-      }
-    });
-  });
-}
-
-/**
- * ScrollSpy: Dynamically update active navigation link with the gold underline
- */
-function initScrollSpy() {
+function initSectionPresentationEngine() {
   const sectionIds = ['home', 'about', 'diagnostic', 'methodology', 'ctex', 'consultation'];
-  const sections = sectionIds
-    .map(id => ({ id, el: document.getElementById(id) }))
-    .filter(item => item.el !== null);
+  const chapters = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
 
-  const navLinks = document.querySelectorAll('.nav-menu .nav-link, .mobile-drawer .nav-link');
-
-  const setActive = (id) => {
-    navLinks.forEach(link => {
-      const href = link.getAttribute('href');
-      if (href === `#${id}`) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
-      }
-    });
-  };
-
-  const updateActiveNav = () => {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const header = document.querySelector('.site-header');
-    const headerHeight = header ? header.offsetHeight : 80;
-
-    // If near the very top of the page, activate Home
-    if (scrollY < 120) {
-      setActive('home');
-      return;
-    }
-
-    // If reached bottom of the page, activate Consultation
-    if ((window.innerHeight + scrollY) >= (document.documentElement.scrollHeight - 60)) {
-      setActive('consultation');
-      return;
-    }
-
-    // Detect section based on current viewport bounding rectangle
-    let activeId = 'home';
-    for (let i = sections.length - 1; i >= 0; i--) {
-      const section = sections[i];
-      const rect = section.el.getBoundingClientRect();
-      if (rect.top <= headerHeight + 120) {
-        activeId = section.id;
-        break;
-      }
-    }
-
-    setActive(activeId);
-  };
-
-  // Scroll listener with passive flag
-  window.addEventListener('scroll', updateActiveNav, { passive: true });
-
-  // Initial trigger
-  updateActiveNav();
-
-  // Instant update on click
-  navLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      const href = link.getAttribute('href');
-      if (href && href.startsWith('#')) {
-        setActive(href.substring(1));
-      }
-    });
-  });
-}
-
-/**
- * Floating Section Navigation FAB (Next / Prev Section Jumps)
- */
-function initSectionNavFab() {
-  const fab = document.getElementById('fab-section-nav');
-  const btnPrev = document.getElementById('btn-fab-prev');
-  const btnNext = document.getElementById('btn-fab-next');
-  const indicator = document.getElementById('fab-section-indicator');
-
-  if (!fab || !btnPrev || !btnNext) return;
-
-  const sectionIds = ['home', 'about', 'diagnostic', 'methodology', 'ctex', 'consultation'];
-  const sections = sectionIds
-    .map(id => document.getElementById(id))
-    .filter(el => el !== null);
+  if (chapters.length === 0) return;
 
   let currentIndex = 0;
+  let isTransitioning = false;
+  let wheelCooldownUntil = 0;
+  let accumulatedOverscroll = 0;
+  let overscrollDirection = null;
 
-  const scrollToSection = (index) => {
-    if (index < 0 || index >= sections.length) return;
-    const targetEl = sections[index];
-    const header = document.querySelector('.site-header');
-    const headerHeight = header ? header.offsetHeight : 80;
-    const targetY = targetEl.getBoundingClientRect().top + window.pageYOffset - (headerHeight - 2);
+  const fabNav = document.getElementById('fab-section-nav');
+  const btnFabPrev = document.getElementById('btn-fab-prev');
+  const btnFabNext = document.getElementById('btn-fab-next');
+  const fabIndicator = document.getElementById('fab-section-indicator');
+  const header = document.querySelector('.site-header');
 
-    window.scrollTo({
-      top: Math.max(0, targetY),
-      behavior: 'smooth'
-    });
-  };
+  /**
+   * Central Controller: Navigate to target chapter
+   */
+  function navigateToSection(targetIndex, direction, immediate = false) {
+    if (targetIndex < 0 || targetIndex >= chapters.length) return;
+    if (isTransitioning && !immediate) return;
 
-  const updateFabState = () => {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const header = document.querySelector('.site-header');
-    const headerHeight = header ? header.offsetHeight : 80;
+    if (!direction) {
+      direction = targetIndex >= currentIndex ? 'forward' : 'backward';
+    }
 
-    let detectedIndex = 0;
-    if ((window.innerHeight + scrollY) >= (document.documentElement.scrollHeight - 60)) {
-      detectedIndex = sections.length - 1;
+    if (targetIndex === currentIndex && !immediate) return;
+
+    const prevChapter = chapters[currentIndex];
+    const nextChapter = chapters[targetIndex];
+
+    isTransitioning = true;
+
+    if (immediate) {
+      chapters.forEach((ch, idx) => {
+        ch.classList.toggle('active', idx === targetIndex);
+        ch.classList.remove('exit-up', 'exit-down');
+        ch.style.transform = '';
+        ch.style.opacity = '';
+        ch.setAttribute('aria-hidden', idx === targetIndex ? 'false' : 'true');
+      });
+      nextChapter.scrollTop = 0;
+      isTransitioning = false;
     } else {
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const rect = sections[i].getBoundingClientRect();
-        if (rect.top <= headerHeight + 140) {
-          detectedIndex = i;
-          break;
+      if (direction === 'forward') {
+        prevChapter.classList.remove('active');
+        prevChapter.classList.add('exit-up');
+
+        nextChapter.classList.remove('exit-up', 'exit-down');
+        nextChapter.style.transform = 'translateY(45px)';
+        nextChapter.style.opacity = '0';
+        void nextChapter.offsetWidth; // Force layout reflow
+
+        nextChapter.classList.add('active');
+        nextChapter.style.transform = 'translateY(0)';
+        nextChapter.style.opacity = '1';
+        nextChapter.scrollTop = 0;
+      } else {
+        prevChapter.classList.remove('active');
+        prevChapter.classList.add('exit-down');
+
+        nextChapter.classList.remove('exit-up', 'exit-down');
+        nextChapter.style.transform = 'translateY(-35px)';
+        nextChapter.style.opacity = '0';
+        void nextChapter.offsetWidth; // Force layout reflow
+
+        nextChapter.classList.add('active');
+        nextChapter.style.transform = 'translateY(0)';
+        nextChapter.style.opacity = '1';
+
+        // When entering backward into an oversized chapter, position at bottom
+        if (nextChapter.scrollHeight > nextChapter.clientHeight + 10) {
+          nextChapter.scrollTop = nextChapter.scrollHeight - nextChapter.clientHeight;
+        } else {
+          nextChapter.scrollTop = 0;
         }
+      }
+
+      setTimeout(() => {
+        prevChapter.classList.remove('exit-up', 'exit-down');
+        nextChapter.style.transform = '';
+        nextChapter.style.opacity = '';
+        isTransitioning = false;
+        accumulatedOverscroll = 0;
+        overscrollDirection = null;
+      }, 650);
+    }
+
+    currentIndex = targetIndex;
+
+    // Synchronize UI States
+    syncPresentationUI();
+  }
+
+  // Expose global method
+  window.MGBS_NavigateToSection = navigateToSection;
+
+  /**
+   * Synchronize all UI indicators, buttons, header links, and state
+   */
+  function syncPresentationUI() {
+    // 1. Floating Section FAB Indicator
+    if (fabIndicator) {
+      fabIndicator.textContent = `0${currentIndex + 1} / 0${chapters.length}`;
+    }
+
+    // 2. FAB Prev / Next Buttons Disabled State
+    if (btnFabPrev) btnFabPrev.disabled = (currentIndex === 0);
+    if (btnFabNext) btnFabNext.disabled = (currentIndex === chapters.length - 1);
+
+    // 3. Header & Mobile Navigation Links
+    const currentId = sectionIds[currentIndex];
+    document.querySelectorAll('.nav-menu .nav-link, .mobile-drawer .nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === `#${currentId}`) {
+        link.classList.add('active');
+        link.setAttribute('aria-current', 'page');
+      } else {
+        link.classList.remove('active');
+        link.removeAttribute('aria-current');
+      }
+    });
+
+    // 4. Header Elevation (.scrolled) State
+    if (header) {
+      const activeChapter = chapters[currentIndex];
+      if (currentIndex > 0 || (activeChapter && activeChapter.scrollTop > 20)) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
       }
     }
 
-    currentIndex = detectedIndex;
-
-    // Enable/disable buttons based on position
-    btnPrev.disabled = (currentIndex === 0);
-    btnNext.disabled = (currentIndex === sections.length - 1);
-
-    if (indicator) {
-      indicator.textContent = `0${currentIndex + 1} / 0${sections.length}`;
+    // 5. Auto-minimize floating audio controller if open and visible
+    const fabAudio = document.getElementById('fab-audio-controller');
+    if (fabAudio && fabAudio.classList.contains('is-visible') && !fabAudio.classList.contains('is-minimized')) {
+      fabAudio.classList.add('is-minimized');
     }
-  };
 
-  btnPrev.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (currentIndex > 0) {
-      scrollToSection(currentIndex - 1);
+    // 6. Non-intrusive URL Hash Update
+    if (window.location.hash !== `#${currentId}`) {
+      try {
+        history.replaceState(null, '', `#${currentId}`);
+      } catch (e) {}
+    }
+
+    // 7. ARIA Attributes
+    chapters.forEach((ch, idx) => {
+      ch.setAttribute('aria-hidden', idx === currentIndex ? 'false' : 'true');
+    });
+  }
+
+  /**
+   * Mouse Wheel Navigation with Adaptive Internal Scrolling
+   */
+  window.addEventListener('wheel', (e) => {
+    if (isTransitioning) return;
+    const now = Date.now();
+    if (now < wheelCooldownUntil) return;
+
+    // Suppress wheel navigation inside inputs, textareas, selects, or interactive dropdowns
+    const target = e.target;
+    if (target && target.closest('input, textarea, select, [contenteditable="true"], .projects-dropdown-menu, .fab-audio-track, .player-scrubber-track')) {
+      return;
+    }
+
+    const currentChapter = chapters[currentIndex];
+    if (!currentChapter) return;
+
+    const deltaY = e.deltaY;
+    if (Math.abs(deltaY) < 18) return; // Filter micro-movements
+
+    const isOverflowing = currentChapter.scrollHeight > currentChapter.clientHeight + 50;
+
+    if (deltaY > 0) {
+      // FORWARD / DOWN
+      if (currentIndex >= chapters.length - 1) return;
+
+      if (isOverflowing) {
+        const atBottom = (currentChapter.scrollTop + currentChapter.clientHeight) >= (currentChapter.scrollHeight - 10);
+        if (!atBottom) {
+          accumulatedOverscroll = 0;
+          overscrollDirection = null;
+          return; // Allow natural internal scrolling down
+        }
+
+        // Reached bottom boundary: accumulate intentional overscroll resistance
+        if (overscrollDirection !== 'down') {
+          overscrollDirection = 'down';
+          accumulatedOverscroll = 0;
+        }
+        accumulatedOverscroll += deltaY;
+
+        if (accumulatedOverscroll >= 40) {
+          accumulatedOverscroll = 0;
+          overscrollDirection = null;
+          wheelCooldownUntil = now + 700;
+          navigateToSection(currentIndex + 1, 'forward');
+        }
+      } else {
+        // Fits within viewport: immediate transition
+        wheelCooldownUntil = now + 700;
+        navigateToSection(currentIndex + 1, 'forward');
+      }
+    } else {
+      // BACKWARD / UP
+      if (currentIndex <= 0) return;
+
+      if (isOverflowing) {
+        const atTop = currentChapter.scrollTop <= 6;
+        if (!atTop) {
+          accumulatedOverscroll = 0;
+          overscrollDirection = null;
+          return; // Allow natural internal scrolling up
+        }
+
+        // Reached top boundary: accumulate intentional overscroll resistance
+        if (overscrollDirection !== 'up') {
+          overscrollDirection = 'up';
+          accumulatedOverscroll = 0;
+        }
+        accumulatedOverscroll += deltaY;
+
+        if (accumulatedOverscroll <= -40) {
+          accumulatedOverscroll = 0;
+          overscrollDirection = null;
+          wheelCooldownUntil = now + 700;
+          navigateToSection(currentIndex - 1, 'backward');
+        }
+      } else {
+        // Fits within viewport: immediate transition
+        wheelCooldownUntil = now + 700;
+        navigateToSection(currentIndex - 1, 'backward');
+      }
+    }
+  }, { passive: true });
+
+  /**
+   * Internal Scroll Listeners on each Chapter
+   */
+  chapters.forEach(ch => {
+    ch.addEventListener('scroll', () => {
+      // Header scrolled state
+      if (header) {
+        if (currentIndex > 0 || ch.scrollTop > 20) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      }
+
+      // Auto-minimize floating audio controller if user scrolls inside oversized chapter
+      const fabAudio = document.getElementById('fab-audio-controller');
+      if (fabAudio && fabAudio.classList.contains('is-visible') && !fabAudio.classList.contains('is-minimized')) {
+        if (ch.scrollTop > 30) {
+          fabAudio.classList.add('is-minimized');
+        }
+      }
+
+      // Reset overscroll latches when moving away from edges
+      const isAtEdge = (ch.scrollTop <= 6) || ((ch.scrollTop + ch.clientHeight) >= (ch.scrollHeight - 10));
+      if (!isAtEdge) {
+        accumulatedOverscroll = 0;
+        overscrollDirection = null;
+      }
+    }, { passive: true });
+  });
+
+  /**
+   * Keyboard Navigation
+   */
+  window.addEventListener('keydown', (e) => {
+    if (isTransitioning) return;
+
+    // Ignore while typing in form elements
+    const activeEl = document.activeElement;
+    if (activeEl && (['INPUT', 'TEXTAREA', 'SELECT'].includes(activeEl.tagName) || activeEl.isContentEditable)) {
+      return;
+    }
+
+    const currentChapter = chapters[currentIndex];
+    const isOverflowing = currentChapter && (currentChapter.scrollHeight > currentChapter.clientHeight + 50);
+
+    if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+      if (isOverflowing && (currentChapter.scrollTop + currentChapter.clientHeight) < (currentChapter.scrollHeight - 10)) {
+        currentChapter.scrollBy({ top: 240, behavior: 'smooth' });
+        return;
+      }
+      e.preventDefault();
+      if (currentIndex < chapters.length - 1) {
+        navigateToSection(currentIndex + 1, 'forward');
+      }
+    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+      if (isOverflowing && currentChapter.scrollTop > 10) {
+        currentChapter.scrollBy({ top: -240, behavior: 'smooth' });
+        return;
+      }
+      e.preventDefault();
+      if (currentIndex > 0) {
+        navigateToSection(currentIndex - 1, 'backward');
+      }
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      navigateToSection(0, 'backward');
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      navigateToSection(chapters.length - 1, 'forward');
     }
   });
 
-  btnNext.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (currentIndex < sections.length - 1) {
-      scrollToSection(currentIndex + 1);
+  /**
+   * Touch & Swipe Gestures on Mobile / Tablet
+   */
+  let touchStartY = 0;
+  let touchStartX = 0;
+  let touchStartTime = 0;
+
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    touchStartY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
+    touchStartTime = Date.now();
+  }, { passive: true });
+
+  window.addEventListener('touchend', (e) => {
+    if (isTransitioning || e.changedTouches.length !== 1) return;
+    const touchEndY = e.changedTouches[0].clientY;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diffY = touchStartY - touchEndY;
+    const diffX = touchStartX - touchEndX;
+    const elapsed = Date.now() - touchStartTime;
+
+    if (Math.abs(diffY) < 55 || Math.abs(diffY) <= Math.abs(diffX) || elapsed > 750) return;
+
+    const currentChapter = chapters[currentIndex];
+    if (!currentChapter) return;
+    const isOverflowing = currentChapter.scrollHeight > currentChapter.clientHeight + 50;
+
+    if (diffY > 0) {
+      // Swipe UP -> Next Section
+      if (isOverflowing) {
+        const atBottom = (currentChapter.scrollTop + currentChapter.clientHeight) >= (currentChapter.scrollHeight - 15);
+        if (!atBottom) return;
+      }
+      if (currentIndex < chapters.length - 1) {
+        navigateToSection(currentIndex + 1, 'forward');
+      }
+    } else {
+      // Swipe DOWN -> Previous Section
+      if (isOverflowing) {
+        const atTop = currentChapter.scrollTop <= 15;
+        if (!atTop) return;
+      }
+      if (currentIndex > 0) {
+        navigateToSection(currentIndex - 1, 'backward');
+      }
     }
+  }, { passive: true });
+
+  /**
+   * Floating FAB Buttons
+   */
+  if (btnFabPrev) {
+    btnFabPrev.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      navigateToSection(currentIndex - 1, 'backward');
+    });
+  }
+  if (btnFabNext) {
+    btnFabNext.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      navigateToSection(currentIndex + 1, 'forward');
+    });
+  }
+
+  /**
+   * Header Links & In-Page Section Anchor Routing
+   */
+  const allSectionLinks = document.querySelectorAll('a[href^="#"]:not([href="#"])');
+  allSectionLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (!href || !href.startsWith('#')) return;
+      const targetId = href.substring(1);
+      const targetIdx = sectionIds.indexOf(targetId);
+
+      if (targetIdx !== -1) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Close mobile drawer if open
+        const mobileDrawer = document.getElementById('mobile-drawer');
+        const drawerOverlay = document.getElementById('drawer-overlay');
+        const btnMobileMenu = document.getElementById('btn-mobile-menu');
+        if (mobileDrawer && mobileDrawer.classList.contains('active')) {
+          mobileDrawer.classList.remove('active');
+          if (drawerOverlay) drawerOverlay.classList.remove('active');
+          if (btnMobileMenu) btnMobileMenu.setAttribute('aria-expanded', 'false');
+          document.body.style.overflow = '';
+        }
+
+        const dir = targetIdx >= currentIndex ? 'forward' : 'backward';
+        navigateToSection(targetIdx, dir);
+      }
+    });
   });
 
-  window.addEventListener('scroll', updateFabState, { passive: true });
-  updateFabState();
+  /**
+   * Draggable FAB Handle Support (Section FAB & Floating Audio Player)
+   */
+  function initDraggableFAB(fabEl, handleEl) {
+    if (!fabEl || !handleEl) return;
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+    let hasMoved = false;
+
+    handleEl.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return; // primary button only
+      isDragging = true;
+      hasMoved = false;
+      startX = e.clientX;
+      startY = e.clientY;
+
+      const rect = fabEl.getBoundingClientRect();
+      initialLeft = rect.left;
+      initialTop = rect.top;
+
+      try {
+        handleEl.setPointerCapture(e.pointerId);
+      } catch (err) {}
+    });
+
+    handleEl.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+        hasMoved = true;
+      }
+
+      if (hasMoved) {
+        e.preventDefault();
+        const newLeft = Math.max(10, Math.min(window.innerWidth - fabEl.offsetWidth - 10, initialLeft + dx));
+        const newTop = Math.max(75, Math.min(window.innerHeight - fabEl.offsetHeight - 10, initialTop + dy));
+
+        fabEl.style.left = `${newLeft}px`;
+        fabEl.style.top = `${newTop}px`;
+        fabEl.style.right = 'auto';
+        fabEl.style.bottom = 'auto';
+      }
+    });
+
+    const endDrag = (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      try {
+        handleEl.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+    };
+
+    handleEl.addEventListener('pointerup', endDrag);
+    handleEl.addEventListener('pointercancel', endDrag);
+  }
+
+  // Initialize drag on Section Navigation indicator
+  if (fabNav && fabIndicator) {
+    initDraggableFAB(fabNav, fabIndicator);
+  }
+
+  // Initialize drag on Floating Audio Controller
+  const fabAudio = document.getElementById('fab-audio-controller');
+  const fabAudioHeader = document.querySelector('.fab-audio-info-wrap');
+  if (fabAudio && fabAudioHeader) {
+    initDraggableFAB(fabAudio, fabAudioHeader);
+  }
+
+  /**
+   * Deep-Linking & Browser History Navigation
+   */
+  const hash = window.location.hash ? window.location.hash.substring(1) : '';
+  const initialIdx = sectionIds.indexOf(hash);
+  if (initialIdx !== -1) {
+    navigateToSection(initialIdx, 'forward', true);
+  } else {
+    navigateToSection(0, 'forward', true);
+  }
+
+  window.addEventListener('popstate', () => {
+    const currentHash = window.location.hash ? window.location.hash.substring(1) : '';
+    const targetIdx = sectionIds.indexOf(currentHash);
+    if (targetIdx !== -1 && targetIdx !== currentIndex) {
+      const dir = targetIdx > currentIndex ? 'forward' : 'backward';
+      navigateToSection(targetIdx, dir);
+    }
+  });
 }
 
 /**
@@ -861,12 +1203,16 @@ function initCtexModule() {
       }
     }, { passive: true });
 
-    // Click on floating title to smoothly scroll down to #ctex section
+    // Click on floating title to smoothly navigate to #ctex section
     if (fabAudioInfoWrap) {
       fabAudioInfoWrap.addEventListener('click', () => {
-        const ctexSection = document.getElementById('ctex');
-        if (ctexSection) {
-          ctexSection.scrollIntoView({ behavior: 'smooth' });
+        if (typeof window.MGBS_NavigateToSection === 'function') {
+          window.MGBS_NavigateToSection(4);
+        } else {
+          const ctexSection = document.getElementById('ctex');
+          if (ctexSection) {
+            ctexSection.scrollIntoView({ behavior: 'smooth' });
+          }
         }
       });
     }
