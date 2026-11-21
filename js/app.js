@@ -762,16 +762,80 @@ function initSectionPresentationEngine() {
     let startY = 0;
     let initialLeft = 0;
     let initialTop = 0;
-    let activeHandle = null;
     let activePointerId = null;
+    let activeHandle = null;
+
+    // Prevent browser native drag (e.g. dragging text/svg)
+    element.addEventListener('dragstart', (e) => e.preventDefault());
+
+    const onPointerMove = (e) => {
+      if (!isDragging) return;
+      if (activePointerId !== null && e.pointerId !== activePointerId) return;
+
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if (!hasMoved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+        hasMoved = true;
+      }
+
+      if (hasMoved) {
+        e.preventDefault();
+        const clamped = getClampedCoordinates(initialLeft + dx, initialTop + dy);
+        element.style.left = `${clamped.x}px`;
+        element.style.top = `${clamped.y}px`;
+        element.style.right = 'auto';
+        element.style.bottom = 'auto';
+      }
+    };
+
+    const onPointerUp = (e) => {
+      if (!isDragging) return;
+      if (activePointerId !== null && e.pointerId !== activePointerId) return;
+
+      isDragging = false;
+      element.classList.remove('is-dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+
+      try {
+        if (activeHandle && activePointerId !== null) {
+          activeHandle.releasePointerCapture(activePointerId);
+        }
+      } catch (err) {}
+
+      if (hasMoved) {
+        const curLeft = parseFloat(element.style.left);
+        const curTop = parseFloat(element.style.top);
+        if (!isNaN(curLeft) && !isNaN(curTop)) {
+          savePosition(curLeft, curTop);
+        }
+      }
+
+      activePointerId = null;
+      activeHandle = null;
+    };
 
     handleList.forEach((handle) => {
+      handle.style.touchAction = 'none';
+
       handle.addEventListener('pointerdown', (e) => {
-        if (e.button !== 0) return; // Primary click only
+        // If clicking on a button, input, or interactive control, let the button handle it
+        if (e.target && e.target.closest('button, input, select, textarea, .fab-nav-btn, .fab-audio-ctrl-btn, .fab-audio-play-btn, .fab-audio-action-btn, .fab-audio-mini-btn, .fab-audio-enlarge-btn, .fab-audio-track')) {
+          return;
+        }
+
+        // Allow primary mouse button (0) or touch/pen (where button is 0 or -1)
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+
         isDragging = true;
         hasMoved = false;
-        activeHandle = handle;
         activePointerId = e.pointerId;
+        activeHandle = handle;
         startX = e.clientX;
         startY = e.clientY;
 
@@ -779,13 +843,19 @@ function initSectionPresentationEngine() {
         initialLeft = rect.left;
         initialTop = rect.top;
 
-        // Switch to explicit left/top positioning immediately
         element.style.left = `${initialLeft}px`;
         element.style.top = `${initialTop}px`;
         element.style.right = 'auto';
         element.style.bottom = 'auto';
 
         element.classList.add('is-dragging');
+        document.body.style.cursor = 'grabbing';
+        document.body.style.userSelect = 'none';
+
+        // Bind move and end to window for 60fps tracking that never drops
+        window.addEventListener('pointermove', onPointerMove, { passive: false });
+        window.addEventListener('pointerup', onPointerUp);
+        window.addEventListener('pointercancel', onPointerUp);
 
         try {
           handle.setPointerCapture(e.pointerId);
@@ -794,51 +864,6 @@ function initSectionPresentationEngine() {
         e.preventDefault();
         e.stopPropagation();
       });
-
-      handle.addEventListener('pointermove', (e) => {
-        if (!isDragging || activePointerId !== e.pointerId) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-
-        if (!hasMoved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
-          hasMoved = true;
-        }
-
-        if (hasMoved) {
-          e.preventDefault();
-          e.stopPropagation();
-          const clamped = getClampedCoordinates(initialLeft + dx, initialTop + dy);
-          element.style.left = `${clamped.x}px`;
-          element.style.top = `${clamped.y}px`;
-        }
-      });
-
-      const handlePointerEnd = (e) => {
-        if (!isDragging || (activePointerId !== null && activePointerId !== e.pointerId)) return;
-        isDragging = false;
-        element.classList.remove('is-dragging');
-
-        try {
-          if (activeHandle && activePointerId !== null) {
-            activeHandle.releasePointerCapture(activePointerId);
-          }
-        } catch (err) {}
-
-        if (hasMoved) {
-          const curLeft = parseFloat(element.style.left);
-          const curTop = parseFloat(element.style.top);
-          if (!isNaN(curLeft) && !isNaN(curTop)) {
-            savePosition(curLeft, curTop);
-          }
-        }
-
-        activeHandle = null;
-        activePointerId = null;
-      };
-
-      handle.addEventListener('pointerup', handlePointerEnd);
-      handle.addEventListener('pointercancel', handlePointerEnd);
-      handle.addEventListener('lostpointercapture', handlePointerEnd);
     });
 
     element.recheckBounds = function() {
@@ -866,18 +891,20 @@ function initSectionPresentationEngine() {
     window.addEventListener('orientationchange', onResize, { passive: true });
   }
 
-  // Initialize Section Navigation FAB dragging (Handle only)
+  // Initialize Section Navigation FAB dragging (Top Handle, Indicator & Pill body)
   const handleNav = document.getElementById('drag-handle-section-nav');
-  if (fabNav && handleNav) {
-    makeElementDraggable(fabNav, handleNav, 'mgbs_pos_section_nav');
+  if (fabNav) {
+    makeElementDraggable(fabNav, [handleNav, fabIndicator, fabNav], 'mgbs_pos_section_nav');
   }
 
-  // Initialize Floating Audio Controller dragging (Full & Mini handles)
+  // Initialize Floating Audio Controller dragging (Full & Mini handles, Header & Mini body)
   const fabAudio = document.getElementById('fab-audio-controller');
   const handleAudioFull = document.getElementById('drag-handle-audio-full');
   const handleAudioMini = document.getElementById('drag-handle-audio-mini');
+  const fabAudioHeader = document.querySelector('.fab-audio-info-wrap');
+  const fabAudioMiniView = document.getElementById('fab-audio-mini-view');
   if (fabAudio) {
-    makeElementDraggable(fabAudio, [handleAudioFull, handleAudioMini], 'mgbs_pos_audio_fab');
+    makeElementDraggable(fabAudio, [handleAudioFull, handleAudioMini, fabAudioHeader, fabAudioMiniView], 'mgbs_pos_audio_fab');
   }
 
   /**
