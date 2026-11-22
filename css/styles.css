@@ -1995,302 +1995,135 @@ div[id="authority"] {
 }
 
 /* ==========================================================================
-   Floating Section Navigation FAB (Bottom Right)
+   Persistent Unified Floating Mega-Pill Dock (Section Nav + Audio Controller)
    ========================================================================== */
-.fab-section-nav {
+.fab-unified-dock {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  z-index: 999;
+  z-index: 1001;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  background: rgba(11, 25, 44, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(229, 169, 60, 0.3);
-  box-shadow: 0 12px 32px rgba(11, 25, 44, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
-  border-radius: var(--radius-full);
-  padding: 0.35rem;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
-}
-
-.fab-section-nav:hover {
-  border-color: rgba(229, 169, 60, 0.6);
-  box-shadow: 0 16px 40px rgba(11, 25, 44, 0.55), 0 0 20px rgba(229, 169, 60, 0.2);
-}
-
-.fab-nav-btn {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid transparent;
-  background: rgba(30, 62, 98, 0.45);
-  color: #f8fafc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.fab-nav-btn:hover:not(:disabled) {
-  background: #1E3E62;
-  color: #E5A93C;
-  border-color: rgba(229, 169, 60, 0.4);
-  transform: scale(1.08);
-}
-
-.fab-nav-btn:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.fab-nav-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.fab-section-indicator {
-  font-family: var(--font-display);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #E5A93C;
-  padding: 0.2rem 0.4rem;
-  user-select: none;
-  -webkit-user-select: none;
-  white-space: nowrap;
-  cursor: grab;
-  touch-action: none;
-}
-
-.fab-section-indicator:active {
-  cursor: grabbing;
-}
-
-@media (max-width: 640px) {
-  .fab-section-nav {
-    bottom: 1.25rem;
-    right: 1.25rem;
-    transform: scale(0.9);
-    transform-origin: bottom right;
-  }
-}
-
-/* ==========================================================================
-   Persistent Floating Audio Controller (Docked Directly Above FAB)
-   ========================================================================== */
-.fab-audio-controller {
-  position: fixed;
-  bottom: calc(2rem + 155px);
-  right: 2rem;
-  z-index: 1000;
-  width: 270px;
-  background: rgba(11, 25, 44, 0.94);
+  width: 54px;
+  background: rgba(11, 25, 44, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(229, 169, 60, 0.35);
-  box-shadow: 0 16px 40px rgba(11, 25, 44, 0.55), 0 0 20px rgba(229, 169, 60, 0.15);
-  border-radius: var(--radius-md);
-  padding: 0.75rem 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(20px) scale(0.95);
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
-              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
-              visibility 0.3s ease,
-              width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-radius 0.28s ease,
-              padding 0.2s ease,
-              box-shadow 0.25s ease;
-  pointer-events: none;
-  overflow: hidden;
+  border-radius: 28px;
+  padding: 5px 4px 6px 4px;
+  box-shadow: 0 16px 40px rgba(11, 25, 44, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  cursor: grab;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
 }
 
-.fab-audio-controller.is-visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
+.fab-unified-dock:hover {
+  border-color: rgba(229, 169, 60, 0.7);
+  box-shadow: 0 20px 48px rgba(11, 25, 44, 0.65), 0 0 24px rgba(229, 169, 60, 0.25);
 }
 
-.fab-audio-controller:active,
-.fab-audio-controller.is-dragging {
+.fab-unified-dock:active,
+.fab-unified-dock.is-dragging {
   cursor: grabbing !important;
 }
 
-.fab-audio-controller button,
-.fab-audio-controller .fab-audio-ctrl-btn,
-.fab-audio-controller .fab-audio-play-btn,
-.fab-audio-controller .fab-audio-action-btn,
-.fab-audio-controller .fab-audio-track {
-  cursor: pointer;
-}
-
-.fab-audio-full-view {
-  display: flex !important;
+/* TOP HALF: Audio Segment */
+.fab-dock-audio-segment {
+  position: relative;
+  display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 0 5px 0;
+  width: 46px;
+  border-radius: 23px;
+}
+
+/* Perimeter Progress SVG */
+.fab-progress-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
 }
 
-.fab-audio-top-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+.fab-progress-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 2.5;
 }
 
-.fab-audio-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  flex-shrink: 0;
+.fab-progress-fill {
+  fill: none;
+  stroke: var(--mgbs-gold);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px rgba(229, 169, 60, 0.75));
+  transition: stroke-dashoffset 0.15s linear;
 }
 
-.fab-audio-action-btn {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 0.2rem;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: color 0.15s ease, background-color 0.15s ease;
-}
-
-.fab-audio-action-btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.fab-audio-action-btn.close-btn:hover {
-  color: #f87171;
-  background: rgba(239, 68, 68, 0.18);
-}
-
-.fab-audio-info-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.fab-audio-pulse-dot {
-  width: 8px;
-  height: 8px;
+/* Common Control Buttons inside Dock */
+.fab-dock-btn {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: #64748b;
-  display: inline-block;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-
-.fab-audio-controller.is-playing .fab-audio-pulse-dot {
-  background: #22c55e;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
-  animation: audioPulse 1.8s infinite;
-}
-
-.fab-audio-chapter-title {
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #f8fafc;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 0.2px;
-}
-
-.fab-audio-close-btn {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 0.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: color 0.15s ease, background-color 0.15s ease;
-  flex-shrink: 0;
-}
-
-.fab-audio-close-btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.fab-audio-controls-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.fab-audio-btn-group {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.fab-audio-nav-btn,
-.fab-audio-ctrl-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(30, 62, 98, 0.45);
   border: 1px solid rgba(229, 169, 60, 0.25);
+  background: rgba(30, 62, 98, 0.5);
   color: #cbd5e1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  position: relative;
+  z-index: 2;
+  transition: all var(--transition-fast);
+  padding: 0;
 }
 
-.fab-audio-nav-btn:hover,
-.fab-audio-ctrl-btn:hover {
+.fab-dock-btn:hover:not(:disabled) {
   background: #1E3E62;
   color: var(--mgbs-gold);
-  border-color: var(--mgbs-gold);
-  transform: scale(1.08);
+  border-color: rgba(229, 169, 60, 0.6);
+  transform: scale(1.1);
 }
 
-.fab-audio-play-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+.fab-dock-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.fab-dock-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Top Play/Pause Accent Button */
+.fab-dock-btn-play {
+  width: 38px;
+  height: 38px;
   background: var(--mgbs-gold);
-  border: none;
   color: var(--mgbs-navy);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 10px rgba(212, 175, 55, 0.45);
 }
 
-.fab-audio-play-btn:hover {
-  transform: scale(1.08);
-  background: #e0be48;
+.fab-dock-btn-play:hover:not(:disabled) {
+  background: #f0c35a;
+  color: var(--mgbs-navy);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.12);
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.65);
 }
 
-/* Explicit Floating Play/Pause State */
+/* Explicit Play/Pause Icon State */
 #btn-fab-audio-play.is-playing #fab-audio-icon-play {
   display: none !important;
 }
@@ -2307,42 +2140,155 @@ div[id="authority"] {
   display: none !important;
 }
 
-.fab-audio-time-readout {
+/* Center Divider */
+.fab-dock-divider {
+  width: 32px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(229, 169, 60, 0.5), transparent);
+  margin: 6px 0;
+  flex-shrink: 0;
+}
+
+/* BOTTOM HALF: Section Navigation Segment */
+.fab-dock-nav-segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0 3px 0;
+  width: 46px;
+}
+
+.fab-nav-btn {
+  width: 36px;
+  height: 36px;
+}
+
+.fab-section-indicator {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #E5A93C;
+  padding: 0.15rem 0.25rem;
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
+  cursor: grab;
+  touch-action: none;
+}
+
+.fab-section-indicator:active {
+  cursor: grabbing;
+}
+
+/* Hover Flyout Tooltip (Left Side) */
+.fab-audio-flyout {
+  position: absolute;
+  right: calc(100% + 14px);
+  top: 10px;
+  width: 230px;
+  background: rgba(11, 25, 44, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(229, 169, 60, 0.4);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.85rem;
+  box-shadow: 0 12px 32px rgba(11, 25, 44, 0.65), 0 0 16px rgba(229, 169, 60, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(10px) scale(0.96);
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.25s ease;
+  pointer-events: none;
+  z-index: 1005;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.fab-unified-dock:hover .fab-audio-flyout,
+.fab-audio-flyout.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+}
+
+.flyout-icon-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.35rem;
+}
+
+.flyout-live-badge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--mgbs-gold);
+  text-transform: uppercase;
+}
+
+.fab-audio-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #64748b;
+  display: inline-block;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.fab-unified-dock.is-playing .fab-audio-pulse-dot {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+  animation: audioPulse 1.8s infinite;
+}
+
+.flyout-title {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.35;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flyout-time {
   font-size: 0.6875rem;
   font-weight: 600;
   color: #94a3b8;
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-.fab-audio-track {
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
-  cursor: pointer;
-  overflow: hidden;
-  position: relative;
+.flyout-cta {
+  font-size: 0.625rem;
+  color: rgba(229, 169, 60, 0.85);
+  margin-top: 0.45rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 500;
+  transition: color 0.15s ease;
 }
 
-.fab-audio-track-fill {
-  height: 100%;
-  width: 0%;
-  background: var(--mgbs-gold);
-  border-radius: 2px;
-  transition: width 0.1s linear;
+.flyout-cta:hover {
+  color: var(--mgbs-gold);
 }
 
 @media (max-width: 640px) {
-  .fab-audio-controller {
-    bottom: calc(1.25rem + 135px);
+  .fab-unified-dock {
+    bottom: 1.25rem;
     right: 1.25rem;
-    width: 230px;
-    padding: 0.65rem 0.75rem;
+    transform: scale(0.9);
+    transform-origin: bottom right;
   }
-  .fab-audio-controller.is-minimized {
-    width: 86px;
-    height: 44px;
-    padding: 0.25rem 0.35rem;
+  .fab-audio-flyout {
+    width: 200px;
+    right: calc(100% + 8px);
   }
 }
 
@@ -3305,31 +3251,24 @@ html, body {
 }
 
 /* ==========================================================================
-   Persistent Floating Component Elevation & Dragging State
+   Persistent Unified Dock Elevation & Dragging State
    ========================================================================== */
-.fab-section-nav {
+.fab-unified-dock {
   z-index: 1001 !important;
   touch-action: none;
   cursor: grab;
 }
 
-.fab-audio-controller {
-  z-index: 1002 !important;
-  touch-action: none;
-  cursor: grab;
-}
-
-.fab-section-nav:active,
-.fab-audio-controller:active,
-.is-dragging {
+.fab-unified-dock:active,
+.fab-unified-dock.is-dragging {
   cursor: grabbing !important;
   user-select: none !important;
   -webkit-user-select: none !important;
   transition: none !important;
   z-index: 99999 !important;
   box-shadow:
-    0 20px 48px rgba(11, 25, 44, 0.75),
-    0 0 28px rgba(229, 169, 60, 0.4) !important;
+    0 24px 54px rgba(11, 25, 44, 0.8),
+    0 0 32px rgba(229, 169, 60, 0.45) !important;
 }
 
 

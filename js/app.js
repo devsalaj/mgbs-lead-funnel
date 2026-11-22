@@ -302,7 +302,7 @@ function initSectionPresentationEngine() {
   let accumulatedOverscroll = 0;
   let overscrollDirection = null;
 
-  const fabNav = document.getElementById('fab-section-nav');
+  const fabNav = document.getElementById('fab-unified-dock');
   const btnFabPrev = document.getElementById('btn-fab-prev');
   const btnFabNext = document.getElementById('btn-fab-next');
   const fabIndicator = document.getElementById('fab-section-indicator');
@@ -449,7 +449,7 @@ function initSectionPresentationEngine() {
 
     // Suppress wheel navigation inside inputs, textareas, selects, or interactive dropdowns
     const target = e.target;
-    if (target && target.closest('input, textarea, select, [contenteditable="true"], .projects-dropdown-menu, .fab-audio-track, .player-scrubber-track')) {
+    if (target && target.closest('input, textarea, select, [contenteditable="true"], .projects-dropdown-menu, .player-scrubber-track, .fab-dock-btn, .fab-audio-flyout')) {
       return;
     }
 
@@ -811,7 +811,7 @@ function initSectionPresentationEngine() {
 
       handle.addEventListener('pointerdown', (e) => {
         // If clicking on a button, input, or interactive control, let the button handle it
-        if (e.target && e.target.closest('button, input, select, textarea, .fab-nav-btn, .fab-audio-ctrl-btn, .fab-audio-play-btn, .fab-audio-action-btn, .fab-audio-track')) {
+        if (e.target && e.target.closest('button, input, select, textarea, .fab-nav-btn, .fab-dock-btn, .fab-audio-flyout, a')) {
           return;
         }
 
@@ -877,15 +877,9 @@ function initSectionPresentationEngine() {
     window.addEventListener('orientationchange', onResize, { passive: true });
   }
 
-  // Initialize Section Navigation FAB dragging (Grabbing anywhere on the pill)
+  // Initialize Unified Mega-Pill Dock dragging (Grabbing anywhere on the dock surface)
   if (fabNav) {
-    makeElementDraggable(fabNav, fabNav, 'mgbs_pos_section_nav');
-  }
-
-  // Initialize Floating Audio Controller dragging (Grabbing anywhere on the controller)
-  const fabAudio = document.getElementById('fab-audio-controller');
-  if (fabAudio) {
-    makeElementDraggable(fabAudio, fabAudio, 'mgbs_pos_audio_fab');
+    makeElementDraggable(fabNav, fabNav, 'mgbs_pos_unified_dock');
   }
 
   /**
@@ -938,16 +932,15 @@ function initCtexModule() {
   const chapterPills = document.querySelectorAll('.chapter-pill');
 
   // Floating persistent audio player elements
-  const fabAudioController = document.getElementById('fab-audio-controller');
-  const btnFabAudioClose = document.getElementById('btn-fab-audio-close');
+  // Floating persistent audio elements in Unified Mega-Pill Dock
+  const fabUnifiedDock = document.getElementById('fab-unified-dock');
   const btnFabAudioPlay = document.getElementById('btn-fab-audio-play');
   const btnFabAudioPrev = document.getElementById('btn-fab-audio-prev');
   const btnFabAudioNext = document.getElementById('btn-fab-audio-next');
-  const fabAudioChapterTitle = document.getElementById('fab-audio-chapter-title');
-  const fabAudioTimeReadout = document.getElementById('fab-audio-time-readout');
-  const fabAudioTrack = document.getElementById('fab-audio-track');
-  const fabAudioTrackFill = document.getElementById('fab-audio-track-fill');
-  const fabAudioInfoWrap = document.querySelector('.fab-audio-info-wrap');
+  const fabDockProgressFill = document.getElementById('fab-dock-progress-fill');
+  const fabAudioFlyout = document.getElementById('fab-audio-flyout');
+  const fabFlyoutTitle = document.getElementById('fab-flyout-title');
+  const fabFlyoutTime = document.getElementById('fab-flyout-time');
 
   // 7 Verified CTEx Tiers (All charm-priced ending in 69 or 99)
   const CTEX_TIERS = {
@@ -1141,6 +1134,18 @@ function initCtexModule() {
     const fabPlayIcon = document.getElementById('fab-audio-icon-play');
     const fabPauseIcon = document.getElementById('fab-audio-icon-pause');
 
+    // Initialize SVG Perimeter Progress Contour
+    let progressPerimeter = 0;
+    if (fabDockProgressFill) {
+      try {
+        progressPerimeter = fabDockProgressFill.getTotalLength();
+      } catch (err) {
+        progressPerimeter = 309.08;
+      }
+      fabDockProgressFill.style.strokeDasharray = `${progressPerimeter}`;
+      fabDockProgressFill.style.strokeDashoffset = `${progressPerimeter}`;
+    }
+
     const setPlayState = (isPlaying) => {
       // In-Card Play/Pause Button State
       playBtn.classList.toggle('is-playing', isPlaying);
@@ -1154,7 +1159,7 @@ function initCtexModule() {
         playBtn.setAttribute('aria-label', 'Play Audio');
       }
 
-      // Floating Mini-Player Play/Pause State
+      // Unified Mega-Pill Dock Play/Pause State
       if (btnFabAudioPlay) {
         btnFabAudioPlay.classList.toggle('is-playing', isPlaying);
         if (isPlaying) {
@@ -1168,16 +1173,9 @@ function initCtexModule() {
         }
       }
 
-      // Floating Mini-Player Visibility & Pulse State
-      if (fabAudioController) {
-        fabAudioController.classList.toggle('is-playing', isPlaying);
-        if (isPlaying) {
-          fabAudioController.classList.add('is-visible');
-          fabAudioController.setAttribute('aria-hidden', 'false');
-          if (typeof fabAudioController.recheckBounds === 'function') {
-            requestAnimationFrame(() => fabAudioController.recheckBounds());
-          }
-        }
+      // Unified Mega-Pill Pulse & Status State
+      if (fabUnifiedDock) {
+        fabUnifiedDock.classList.toggle('is-playing', isPlaying);
       }
     };
 
@@ -1247,32 +1245,16 @@ function initCtexModule() {
       btnFabAudioPlay.addEventListener('click', togglePlay);
     }
 
-    // Attach Previous / Next Listeners (Card & Floating Controller)
+    // Attach Previous / Next Listeners (Card & Unified Mega-Pill Dock)
     if (btnAudioPrev) btnAudioPrev.addEventListener('click', skipToPrevChapter);
     if (btnAudioNext) btnAudioNext.addEventListener('click', skipToNextChapter);
     if (btnFabAudioPrev) btnFabAudioPrev.addEventListener('click', skipToPrevChapter);
     if (btnFabAudioNext) btnFabAudioNext.addEventListener('click', skipToNextChapter);
 
-    // Close Button: Stops the audio player altogether and dismisses the floating controller
-    if (btnFabAudioClose) {
-      btnFabAudioClose.addEventListener('click', (e) => {
+    // Click on hover flyout to smoothly navigate to #ctex chapter details
+    if (fabAudioFlyout) {
+      fabAudioFlyout.addEventListener('click', (e) => {
         e.stopPropagation();
-        btnFabAudioClose.blur();
-        audioElement.pause();
-        setPlayState(false);
-        if (fabAudioController) {
-          fabAudioController.classList.remove('is-visible');
-          fabAudioController.setAttribute('aria-hidden', 'true');
-        }
-        trackCtexEvent('ctex_floating_audio_closed_stop', {
-          currentTime: audioElement.currentTime
-        });
-      });
-    }
-
-    // Click on floating title to smoothly navigate to #ctex section
-    if (fabAudioInfoWrap) {
-      fabAudioInfoWrap.addEventListener('click', () => {
         if (typeof window.MGBS_NavigateToSection === 'function') {
           window.MGBS_NavigateToSection(4);
         } else {
@@ -1289,14 +1271,12 @@ function initCtexModule() {
     audioElement.addEventListener('ended', () => {
       setPlayState(false);
       trackFill.style.width = '0%';
-      if (fabAudioTrackFill) fabAudioTrackFill.style.width = '0%';
+      if (fabDockProgressFill && progressPerimeter > 0) {
+        fabDockProgressFill.style.strokeDashoffset = `${progressPerimeter}`;
+      }
       if (timeCurrent) timeCurrent.textContent = '00:00';
       const dur = audioElement.duration || 87.84;
-      if (fabAudioTimeReadout) fabAudioTimeReadout.textContent = `00:00 / ${formatTime(dur)}`;
-      if (fabAudioController) {
-        fabAudioController.classList.remove('is-visible');
-        fabAudioController.setAttribute('aria-hidden', 'true');
-      }
+      if (fabFlyoutTime) fabFlyoutTime.textContent = `00:00 / ${formatTime(dur)}`;
       trackCtexEvent('ctex_audio_completed', {});
     });
 
@@ -1304,12 +1284,12 @@ function initCtexModule() {
       if (timeTotal && audioElement.duration) {
         timeTotal.textContent = formatTime(audioElement.duration);
       }
-      if (fabAudioTimeReadout && audioElement.duration) {
-        fabAudioTimeReadout.textContent = `00:00 / ${formatTime(audioElement.duration)}`;
+      if (fabFlyoutTime && audioElement.duration) {
+        fabFlyoutTime.textContent = `00:00 / ${formatTime(audioElement.duration)}`;
       }
     });
 
-    // Timeupdate sync for scrubber bar, floating mini-player, time readouts, and chapter highlights
+    // Timeupdate sync for scrubber bar, perimeter progress, flyout time readouts, and chapter highlights
     audioElement.addEventListener('timeupdate', () => {
       const cur = audioElement.currentTime;
       const dur = audioElement.duration || 87.84;
@@ -1328,15 +1308,16 @@ function initCtexModule() {
         chapterActiveLabel.textContent = activeChapter.title;
       }
 
-      // Sync Floating Mini-Player Readouts
-      if (fabAudioTimeReadout) {
-        fabAudioTimeReadout.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
+      // Sync Unified Dock Flyout Readouts & Perimeter Progress
+      if (fabFlyoutTime) {
+        fabFlyoutTime.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
       }
-      if (fabAudioTrackFill) {
-        fabAudioTrackFill.style.width = `${pct}%`;
+      if (fabFlyoutTitle && activeChapter) {
+        fabFlyoutTitle.textContent = activeChapter.title;
       }
-      if (fabAudioChapterTitle && activeChapter) {
-        fabAudioChapterTitle.textContent = activeChapter.title;
+      if (fabDockProgressFill && progressPerimeter > 0) {
+        const offset = progressPerimeter * (1 - (pct / 100));
+        fabDockProgressFill.style.strokeDashoffset = `${offset}`;
       }
 
       // Highlight active chapter pill
@@ -1362,21 +1343,6 @@ function initCtexModule() {
       }
       trackCtexEvent('ctex_audio_scrub', { targetTime: audioElement.currentTime, source: 'card_scrubber' });
     });
-
-    // Click on Floating Mini-Player Track to Seek
-    if (fabAudioTrack) {
-      fabAudioTrack.addEventListener('click', (e) => {
-        const rect = fabAudioTrack.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const pct = Math.max(0, Math.min(1, clickX / rect.width));
-        const dur = audioElement.duration || 87.84;
-        audioElement.currentTime = pct * dur;
-        if (audioElement.paused) {
-          audioElement.play().catch(() => {});
-        }
-        trackCtexEvent('ctex_audio_scrub', { targetTime: audioElement.currentTime, source: 'fab_scrubber' });
-      });
-    }
 
     // Chapter Pill Click Seeking
     chapterPills.forEach(pill => {
