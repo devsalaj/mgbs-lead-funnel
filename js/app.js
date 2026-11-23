@@ -1203,13 +1203,13 @@ function initCtexModule() {
     const fabPlayIcon = document.getElementById('fab-audio-icon-play');
     const fabPauseIcon = document.getElementById('fab-audio-icon-pause');
 
-    // Initialize SVG Perimeter Progress Contours (Capsule & Mini Circle)
+    // Initialize SVG Perimeter Progress Contours (Full Outer Edge Capsule & Mini Circle)
     let progressPerimeter = 0;
     if (fabDockProgressFill) {
       try {
         progressPerimeter = fabDockProgressFill.getTotalLength();
       } catch (err) {
-        progressPerimeter = 309.08;
+        progressPerimeter = 735.93;
       }
       fabDockProgressFill.style.strokeDasharray = `${progressPerimeter}`;
       fabDockProgressFill.style.strokeDashoffset = `${progressPerimeter}`;
@@ -1220,7 +1220,7 @@ function initCtexModule() {
       try {
         progressPerimeterMini = fabDockProgressFillMini.getTotalLength();
       } catch (err) {
-        progressPerimeterMini = 131.95;
+        progressPerimeterMini = 175.93;
       }
       fabDockProgressFillMini.style.strokeDasharray = `${progressPerimeterMini}`;
       fabDockProgressFillMini.style.strokeDashoffset = `${progressPerimeterMini}`;
