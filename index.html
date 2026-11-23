@@ -1315,9 +1315,16 @@
 
     <!-- TOP HALF: Audio Segment with Perimeter Progress Stroke -->
     <div class="fab-dock-audio-segment" id="fab-dock-audio-segment">
-      <svg class="fab-progress-svg" viewBox="0 0 54 130" aria-hidden="true">
+      <!-- Capsule Progress SVG (Full Expanded Mode) -->
+      <svg class="fab-progress-svg fab-progress-capsule" viewBox="0 0 54 130" aria-hidden="true">
         <rect class="fab-progress-track" x="2" y="2" width="50" height="126" rx="25" ry="25" />
         <rect class="fab-progress-fill" id="fab-dock-progress-fill" x="2" y="2" width="50" height="126" rx="25" ry="25" />
+      </svg>
+
+      <!-- Circular Progress SVG (Minimized Round Mode) -->
+      <svg class="fab-progress-svg fab-progress-circle" viewBox="0 0 46 46" aria-hidden="true">
+        <circle class="fab-progress-track" cx="23" cy="23" r="21" />
+        <circle class="fab-progress-fill" id="fab-dock-progress-fill-mini" cx="23" cy="23" r="21" />
       </svg>
 
       <!-- Play/Pause Button on Top -->

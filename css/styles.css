@@ -2006,6 +2006,8 @@ div[id="authority"] {
   flex-direction: column;
   align-items: center;
   width: 54px;
+  height: 274px;
+  max-height: 274px;
   background: rgba(11, 25, 44, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -2017,8 +2019,15 @@ div[id="authority"] {
   -webkit-user-select: none;
   touch-action: none;
   cursor: grab;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              padding 0.35s ease,
+              border-radius 0.35s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease,
+              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .fab-unified-dock:hover {
@@ -2031,6 +2040,53 @@ div[id="authority"] {
   cursor: grabbing !important;
 }
 
+/* Minimized Round Circle Mode (Auto-Minimized on 10s Inactivity) */
+.fab-unified-dock.is-minimized {
+  height: 54px;
+  max-height: 54px;
+  border-radius: 27px;
+  padding: 4px;
+  border-color: rgba(229, 169, 60, 0.45);
+  box-shadow: 0 8px 24px rgba(11, 25, 44, 0.65), 0 0 14px rgba(229, 169, 60, 0.2);
+}
+
+.fab-unified-dock.is-minimized .fab-dock-audio-segment {
+  padding: 0;
+  gap: 0;
+  width: 46px;
+  height: 46px;
+  justify-content: center;
+}
+
+/* Secondary controls fade and collapse in minimized state */
+.fab-unified-dock.is-minimized #btn-fab-audio-next,
+.fab-unified-dock.is-minimized #btn-fab-audio-prev,
+.fab-unified-dock.is-minimized .fab-dock-divider,
+.fab-unified-dock.is-minimized .fab-dock-nav-segment,
+.fab-unified-dock.is-minimized .fab-audio-flyout {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translateY(10px) !important;
+  transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease, visibility 0.2s ease;
+}
+
+/* Expanded state transitions for inner controls */
+#btn-fab-audio-next,
+#btn-fab-audio-prev,
+.fab-dock-divider,
+.fab-dock-nav-segment {
+  transform: translateY(0);
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              max-height 0.35s ease,
+              margin 0.35s ease,
+              padding 0.35s ease;
+}
+
 /* TOP HALF: Audio Segment */
 .fab-dock-audio-segment {
   position: relative;
@@ -2041,6 +2097,24 @@ div[id="authority"] {
   padding: 7px 0 5px 0;
   width: 46px;
   border-radius: 23px;
+  transition: padding 0.35s ease, gap 0.35s ease, width 0.35s ease, height 0.35s ease;
+}
+
+/* Dual SVG Progress Contours */
+.fab-progress-capsule {
+  display: block;
+}
+
+.fab-progress-circle {
+  display: none;
+}
+
+.fab-unified-dock.is-minimized .fab-progress-capsule {
+  display: none !important;
+}
+
+.fab-unified-dock.is-minimized .fab-progress-circle {
+  display: block !important;
 }
 
 /* Perimeter Progress SVG */

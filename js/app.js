@@ -882,6 +882,74 @@ function initSectionPresentationEngine() {
     makeElementDraggable(fabNav, fabNav, 'mgbs_pos_unified_dock');
   }
 
+  // --- Auto-Minimizing Mega-Pill Dock (10-Second Inactivity Collapse) ---
+  const INACTIVITY_TIMEOUT = 10000;
+  let minimizeTimer = null;
+  let isHoveringDock = false;
+
+  function minimizeDock() {
+    if (isHoveringDock) return;
+    if (fabNav) {
+      fabNav.classList.add('is-minimized');
+    }
+  }
+
+  function expandDock() {
+    if (fabNav) {
+      fabNav.classList.remove('is-minimized');
+    }
+    startInactivityTimer();
+  }
+
+  function startInactivityTimer() {
+    if (minimizeTimer) clearTimeout(minimizeTimer);
+    if (isHoveringDock) return;
+    minimizeTimer = setTimeout(minimizeDock, INACTIVITY_TIMEOUT);
+  }
+
+  function onUserActive() {
+    expandDock();
+  }
+
+  if (fabNav) {
+    fabNav.addEventListener('pointerenter', () => {
+      isHoveringDock = true;
+      if (minimizeTimer) clearTimeout(minimizeTimer);
+      expandDock();
+    });
+
+    fabNav.addEventListener('pointerleave', () => {
+      isHoveringDock = false;
+      startInactivityTimer();
+    });
+
+    // Expand on click/tap if minimized
+    fabNav.addEventListener('click', () => {
+      expandDock();
+    });
+  }
+
+  // Activity listeners to expand dock and refresh 10s timer
+  window.addEventListener('wheel', onUserActive, { passive: true });
+  window.addEventListener('scroll', onUserActive, { passive: true });
+  window.addEventListener('touchmove', onUserActive, { passive: true });
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space'].includes(e.code)) {
+      onUserActive();
+    }
+  }, { passive: true });
+
+  chapters.forEach((ch) => {
+    ch.addEventListener('scroll', onUserActive, { passive: true });
+  });
+
+  // Start initial 10-second timer on page load
+  startInactivityTimer();
+
+  // Expose methods for testing or external hooks
+  window.MGBS_ExpandDock = expandDock;
+  window.MGBS_MinimizeDock = minimizeDock;
+
   /**
    * Deep-Linking & Browser History Navigation
    */
@@ -938,6 +1006,7 @@ function initCtexModule() {
   const btnFabAudioPrev = document.getElementById('btn-fab-audio-prev');
   const btnFabAudioNext = document.getElementById('btn-fab-audio-next');
   const fabDockProgressFill = document.getElementById('fab-dock-progress-fill');
+  const fabDockProgressFillMini = document.getElementById('fab-dock-progress-fill-mini');
   const fabAudioFlyout = document.getElementById('fab-audio-flyout');
   const fabFlyoutTitle = document.getElementById('fab-flyout-title');
   const fabFlyoutTime = document.getElementById('fab-flyout-time');
@@ -1134,7 +1203,7 @@ function initCtexModule() {
     const fabPlayIcon = document.getElementById('fab-audio-icon-play');
     const fabPauseIcon = document.getElementById('fab-audio-icon-pause');
 
-    // Initialize SVG Perimeter Progress Contour
+    // Initialize SVG Perimeter Progress Contours (Capsule & Mini Circle)
     let progressPerimeter = 0;
     if (fabDockProgressFill) {
       try {
@@ -1144,6 +1213,17 @@ function initCtexModule() {
       }
       fabDockProgressFill.style.strokeDasharray = `${progressPerimeter}`;
       fabDockProgressFill.style.strokeDashoffset = `${progressPerimeter}`;
+    }
+
+    let progressPerimeterMini = 0;
+    if (fabDockProgressFillMini) {
+      try {
+        progressPerimeterMini = fabDockProgressFillMini.getTotalLength();
+      } catch (err) {
+        progressPerimeterMini = 131.95;
+      }
+      fabDockProgressFillMini.style.strokeDasharray = `${progressPerimeterMini}`;
+      fabDockProgressFillMini.style.strokeDashoffset = `${progressPerimeterMini}`;
     }
 
     const setPlayState = (isPlaying) => {
@@ -1274,6 +1354,9 @@ function initCtexModule() {
       if (fabDockProgressFill && progressPerimeter > 0) {
         fabDockProgressFill.style.strokeDashoffset = `${progressPerimeter}`;
       }
+      if (fabDockProgressFillMini && progressPerimeterMini > 0) {
+        fabDockProgressFillMini.style.strokeDashoffset = `${progressPerimeterMini}`;
+      }
       if (timeCurrent) timeCurrent.textContent = '00:00';
       const dur = audioElement.duration || 87.84;
       if (fabFlyoutTime) fabFlyoutTime.textContent = `00:00 / ${formatTime(dur)}`;
@@ -1308,7 +1391,7 @@ function initCtexModule() {
         chapterActiveLabel.textContent = activeChapter.title;
       }
 
-      // Sync Unified Dock Flyout Readouts & Perimeter Progress
+      // Sync Unified Dock Flyout Readouts & Perimeter Progress (Capsule & Mini Circle)
       if (fabFlyoutTime) {
         fabFlyoutTime.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
       }
@@ -1318,6 +1401,10 @@ function initCtexModule() {
       if (fabDockProgressFill && progressPerimeter > 0) {
         const offset = progressPerimeter * (1 - (pct / 100));
         fabDockProgressFill.style.strokeDashoffset = `${offset}`;
+      }
+      if (fabDockProgressFillMini && progressPerimeterMini > 0) {
+        const offsetMini = progressPerimeterMini * (1 - (pct / 100));
+        fabDockProgressFillMini.style.strokeDashoffset = `${offsetMini}`;
       }
 
       // Highlight active chapter pill
