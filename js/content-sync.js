@@ -44,6 +44,14 @@
         }
       }
     });
+
+    // Expose in-memory content map and notify reactive components (CTEx Tiers, Audio, Dock)
+    window.MGBS_CURRENT_CONTENT = content;
+    try {
+      window.dispatchEvent(new CustomEvent('mgbs:content-synced', { detail: content }));
+    } catch (evErr) {
+      console.warn('[ContentSync] CustomEvent dispatch error:', evErr);
+    }
   }
 
   /**

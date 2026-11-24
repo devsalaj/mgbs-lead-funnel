@@ -985,6 +985,9 @@ function initCtexModule() {
   const enrollBtn = document.getElementById('ctex-enroll-btn');
   const enrollBtnText = document.getElementById('ctex-enroll-btn-text');
 
+  let updateTierUI = () => {};
+  let getCurrentChapterIndex = () => 0;
+
   // Audio elements (In-Card & Floating Controller)
   const audioElement = document.getElementById('ctex-audio-element');
   const playBtn = document.getElementById('btn-audio-play');
@@ -1128,7 +1131,7 @@ function initCtexModule() {
 
   // --- COMPONENT 1: Tier Selection Handler ---
   if (tierSelect && priceDisplay && headingDisplay && personaDisplay && deliverablesList && enrollBtn) {
-    const updateTierUI = (tierKey) => {
+    updateTierUI = (tierKey) => {
       const tier = CTEX_TIERS[tierKey];
       if (!tier) return;
 
@@ -1274,7 +1277,7 @@ function initCtexModule() {
       }
     };
 
-    const getCurrentChapterIndex = () => {
+    getCurrentChapterIndex = () => {
       const cur = audioElement.currentTime;
       const idx = CHAPTER_CUES.findIndex(ch => cur >= ch.start && cur < ch.end);
       return idx >= 0 ? idx : 0;
@@ -1449,5 +1452,112 @@ function initCtexModule() {
         });
       });
     });
+  }
+
+  // --- COMPONENT 3: Live Headless CMS Re-hydration Hook (Google Sheets Live Sync) ---
+  const rehydrateCtexFromContent = (content) => {
+    if (!content || typeof content !== 'object') return;
+
+    let tiersChanged = false;
+    for (let i = 1; i <= 7; i++) {
+      const tierKey = `tier-${i}`;
+      const nameVal = content[`ctex_tier_${i}_name`];
+      const priceVal = content[`ctex_tier_${i}_price`];
+      const personaVal = content[`ctex_tier_${i}_persona`];
+      const deliverablesVal = content[`ctex_tier_${i}_deliverables`];
+
+      if (CTEX_TIERS[tierKey]) {
+        if (nameVal && typeof nameVal === 'string' && nameVal.trim()) {
+          CTEX_TIERS[tierKey].name = nameVal.trim();
+          tiersChanged = true;
+        }
+        if (priceVal && String(priceVal).trim()) {
+          const numPrice = parseInt(String(priceVal).replace(/[^0-9]/g, ''), 10);
+          if (!isNaN(numPrice)) {
+            CTEX_TIERS[tierKey].price = numPrice;
+            CTEX_TIERS[tierKey].formattedPrice = `$${numPrice.toLocaleString()}`;
+            tiersChanged = true;
+          }
+        }
+        if (personaVal && typeof personaVal === 'string' && personaVal.trim()) {
+          CTEX_TIERS[tierKey].persona = personaVal.trim();
+          tiersChanged = true;
+        }
+        if (deliverablesVal && typeof deliverablesVal === 'string' && deliverablesVal.trim()) {
+          const items = deliverablesVal.split(/[|\n]/).map(s => s.trim()).filter(Boolean);
+          if (items.length > 0) {
+            CTEX_TIERS[tierKey].deliverables = items;
+            tiersChanged = true;
+          }
+        }
+      }
+    }
+
+    // Update <select id="ctex-tier-select"> option labels & active card
+    if (tierSelect && tiersChanged) {
+      Array.from(tierSelect.options).forEach((opt, idx) => {
+        const tierNum = idx + 1;
+        const tierKey = `tier-${tierNum}`;
+        const t = CTEX_TIERS[tierKey];
+        if (t) {
+          opt.textContent = `${tierNum}. ${t.name} — ${t.formattedPrice}`;
+        }
+      });
+      if (typeof updateTierUI === 'function') {
+        updateTierUI(tierSelect.value || 'tier-1');
+      }
+    }
+
+    // Update consultation challenge options if present
+    const challengeDropdown = document.getElementById('operational_challenge');
+    if (challengeDropdown && tiersChanged) {
+      Array.from(challengeDropdown.options).forEach(opt => {
+        for (let i = 1; i <= 7; i++) {
+          if (opt.value && opt.value.startsWith(`CTEx Tier ${i}:`)) {
+            const t = CTEX_TIERS[`tier-${i}`];
+            if (t) {
+              const updatedText = `CTEx Tier ${i}: ${t.name} (${t.formattedPrice})`;
+              opt.value = updatedText;
+              opt.textContent = updatedText;
+            }
+          }
+        }
+      });
+    }
+
+    // Update Audio Chapters & Cues
+    for (let k = 1; k <= 4; k++) {
+      const chTitle = content[`ctex_audio_ch${k}_title`];
+      if (chTitle && typeof chTitle === 'string' && chTitle.trim() && CHAPTER_CUES[k - 1]) {
+        CHAPTER_CUES[k - 1].title = chTitle.trim();
+      }
+      const chNameOnly = content[`ctex_audio_ch${k}_name`];
+      const chPillSpan = document.querySelector(`.chapter-pill[data-chapter="${k}"] .ch-name`);
+      if (chPillSpan && (chNameOnly || chTitle)) {
+        const cleanName = (chNameOnly || chTitle).replace(/^Chapter\s+\d+:\s*/i, '').trim();
+        chPillSpan.textContent = cleanName;
+      }
+    }
+
+    // Update active chapter label if currently idle or playing
+    const curIdx = typeof getCurrentChapterIndex === 'function' ? getCurrentChapterIndex() : 0;
+    if (chapterActiveLabel && CHAPTER_CUES[curIdx]) {
+      chapterActiveLabel.textContent = CHAPTER_CUES[curIdx].title;
+    }
+    if (fabFlyoutTitle && CHAPTER_CUES[curIdx]) {
+      fabFlyoutTitle.textContent = CHAPTER_CUES[curIdx].title;
+    }
+  };
+
+  // Listen for Headless CMS sync updates (both from localStorage cold-start and network sync)
+  window.addEventListener('mgbs:content-synced', (e) => {
+    if (e.detail) {
+      rehydrateCtexFromContent(e.detail);
+    }
+  });
+
+  // Rehydrate immediately if content is already loaded in memory
+  if (window.MGBS_CURRENT_CONTENT) {
+    rehydrateCtexFromContent(window.MGBS_CURRENT_CONTENT);
   }
 }
