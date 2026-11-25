@@ -1098,6 +1098,9 @@ function initCtexModule() {
     }
   };
 
+  // Expose live CTEx tiers globally for PayPal Checkout integration
+  window.MGBS_CTEX_TIERS = CTEX_TIERS;
+
   // 4 Chapter Cue Points
   const CHAPTER_CUES = [
     { chapter: 1, title: 'Chapter 1: Six Sigma in Careers', start: 0.0, end: 26.5 },
@@ -1172,6 +1175,7 @@ function initCtexModule() {
 
     // CTA Click - Pre-fill Consultation Challenge Dropdown & Telemetry
     enrollBtn.addEventListener('click', (e) => {
+      e.preventDefault();
       const selectedTierKey = enrollBtn.getAttribute('data-tier') || 'tier-1';
       const tier = CTEX_TIERS[selectedTierKey];
 

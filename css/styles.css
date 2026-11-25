@@ -1875,9 +1875,17 @@ div[id="authority"] {
   transition: opacity var(--transition-normal);
 }
 
-.modal-overlay.active {
+.modal-overlay.active,
+.modal-overlay.is-active {
   display: flex;
   opacity: 1;
+}
+
+body.modal-open .fab-unified-dock {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: scale(0.9) !important;
+  transition: opacity 0.25s ease, transform 0.25s ease !important;
 }
 
 .modal-card {
@@ -1891,9 +1899,11 @@ div[id="authority"] {
   border: 1px solid var(--mgbs-border);
   transform: scale(0.95);
   transition: transform var(--transition-normal);
+  position: relative;
 }
 
-.modal-overlay.active .modal-card {
+.modal-overlay.active .modal-card,
+.modal-overlay.is-active .modal-card {
   transform: scale(1);
 }
 
@@ -1948,6 +1958,331 @@ div[id="authority"] {
 
 .receipt-row strong {
   color: var(--mgbs-navy);
+}
+
+/* ==========================================================================
+   Checkout Modal & PayPal Smart Button Styling (Executive Presentation)
+   ========================================================================== */
+.checkout-modal-card {
+  max-width: 620px;
+  padding: 2.25rem 2rem;
+  text-align: left;
+  border-top: 4px solid var(--mgbs-gold);
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+  z-index: 10;
+}
+
+.modal-close-btn:hover {
+  background: #0B2545;
+  color: #ffffff;
+  border-color: #0B2545;
+  transform: rotate(90deg);
+}
+
+.checkout-modal-header {
+  margin-bottom: 1.25rem;
+  padding-right: 2rem;
+}
+
+.checkout-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(11, 37, 69, 0.08);
+  border: 1px solid rgba(11, 37, 69, 0.15);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.75px;
+  color: var(--mgbs-navy);
+  margin-bottom: 0.65rem;
+}
+
+.checkout-brand-badge .lock-icon {
+  font-size: 0.75rem;
+}
+
+.checkout-modal-title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--mgbs-navy);
+  margin-bottom: 0.35rem;
+  line-height: 1.25;
+}
+
+.checkout-modal-subtitle {
+  font-size: 0.85rem;
+  color: var(--mgbs-slate);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Order Summary Box */
+.checkout-order-summary {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-tier-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-tier-info {
+  flex: 1;
+}
+
+.summary-tier-badge {
+  display: inline-block;
+  background: rgba(229, 169, 60, 0.18);
+  color: #b45309;
+  border: 1px solid rgba(229, 169, 60, 0.35);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.75px;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.35rem;
+}
+
+.summary-tier-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--mgbs-navy);
+  margin: 0 0 0.25rem 0;
+}
+
+.summary-tier-persona {
+  font-size: 0.775rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.summary-price-box {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.summary-price-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.summary-price-amount {
+  font-size: 1.85rem;
+  font-weight: 900;
+  color: var(--mgbs-navy);
+  line-height: 1;
+  margin: 0.2rem 0;
+}
+
+.summary-currency {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--mgbs-gold);
+}
+
+.summary-deliverables {
+  padding-top: 0.85rem;
+}
+
+.deliverables-heading {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--mgbs-navy);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.45rem;
+}
+
+.summary-deliverables-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.summary-deliverables-list li {
+  font-size: 0.8125rem;
+  color: #334155;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  line-height: 1.35;
+}
+
+.summary-deliverables-list li::before {
+  content: "✓";
+  color: #16a34a;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* Payment Section */
+.checkout-payment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.payment-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--mgbs-navy);
+}
+
+.payment-trust-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.trust-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+}
+
+.paypal-button-wrapper {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.paypal-loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 1rem;
+  color: var(--mgbs-navy);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.paypal-error-notice {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkout-security-footer {
+  margin-top: 0.5rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.security-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.security-item svg {
+  color: #16a34a;
+}
+
+.consultation-alt {
+  font-size: 0.775rem;
+  color: #475569;
+}
+
+.consultation-alt a {
+  color: #0B2545;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.consultation-alt a:hover {
+  color: var(--mgbs-gold);
+}
+
+/* Receipt Modal Enhancements */
+.receipt-modal-card {
+  max-width: 520px;
+  padding: 2.5rem 2rem;
+}
+
+.receipt-next-steps {
+  background: #f8fafc;
+  border-left: 3px solid var(--mgbs-gold);
+  padding: 0.85rem 1rem;
+  border-radius: 4px;
+  text-align: left;
+  margin-top: 1rem;
+}
+
+.receipt-next-steps h4 {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--mgbs-navy);
+  margin: 0 0 0.35rem 0;
+  text-transform: uppercase;
+}
+
+.receipt-next-steps p {
+  font-size: 0.775rem;
+  color: #475569;
+  margin: 0.25rem 0;
+  line-height: 1.4;
 }
 
 /* Toast Notifications */
