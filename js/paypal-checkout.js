@@ -20,12 +20,63 @@
 
   // Global Config with Safe Fallbacks
   const CONFIG = window.MGBS_PAYPAL_CONFIG || {
-    // Dr. Shree's PayPal Client ID (Defaulting to 'sb' for sandbox testing; replace with live Client ID)
+    // Dr. Shree's PayPal Client ID (Defaulting to 'sb' for sandbox testing; dynamic override via Google Sheets Settings tab)
     clientId: 'sb',
     currency: 'USD',
     environment: 'sandbox',
     endpoint: 'https://script.google.com/macros/s/AKfycbz7LoJa8i_6quvvuMvnjRXn2cHOYFQKNgzPRuCSuPCT8Sj7TGshYGc29qXu7ayFbeVX3g/exec'
   };
+
+  // Immediate 0ms Cold Start: Restore dynamic settings from localStorage cache
+  try {
+    const cachedSettings = JSON.parse(localStorage.getItem('mgbs_website_settings_cache') || '{}');
+    if (cachedSettings.paypal_client_id) {
+      CONFIG.clientId = cachedSettings.paypal_client_id.trim();
+    }
+    if (cachedSettings.paypal_currency) {
+      CONFIG.currency = cachedSettings.paypal_currency.trim();
+    }
+    if (cachedSettings.paypal_environment) {
+      CONFIG.environment = cachedSettings.paypal_environment.trim();
+    }
+  } catch (cErr) {
+    console.warn('[MGBS PayPal] Settings cache read warning:', cErr);
+  }
+
+  // Reactive listener for live updates from Google Sheets Settings Tab
+  window.addEventListener('mgbs:settings-synced', function (e) {
+    const settings = e.detail;
+    if (!settings) return;
+
+    let changed = false;
+    if (settings.paypal_client_id && settings.paypal_client_id.trim() !== CONFIG.clientId) {
+      CONFIG.clientId = settings.paypal_client_id.trim();
+      changed = true;
+    }
+    if (settings.paypal_currency && settings.paypal_currency.trim() !== CONFIG.currency) {
+      CONFIG.currency = settings.paypal_currency.trim();
+      changed = true;
+    }
+    if (settings.paypal_environment && settings.paypal_environment.trim() !== CONFIG.environment) {
+      CONFIG.environment = settings.paypal_environment.trim();
+      changed = true;
+    }
+
+    if (changed) {
+      console.log('[MGBS PayPal] Live settings updated from Google Sheets. Client ID:', CONFIG.clientId);
+      if (isSdkReady) {
+        // Hot-reload SDK if Client ID changed dynamically
+        const existingScript = document.getElementById('paypal-js-sdk');
+        if (existingScript) existingScript.remove();
+        window.paypal = null;
+        isSdkReady = false;
+        isSdkLoading = false;
+        if (modalOverlay && modalOverlay.classList.contains('is-active')) {
+          renderPayPalButtons();
+        }
+      }
+    }
+  });
 
   const STORAGE_WAL_KEY = '_mgbs_pending_transactions_wal';
 
@@ -90,15 +141,22 @@
 
       isSdkLoading = true;
 
-      // Allow Google Sheets headless CMS or window config to override client-id
+      // Allow Google Sheets Settings tab, headless CMS, or window config to override client-id
       let resolvedClientId = CONFIG.clientId;
-      if (window.MGBS_CURRENT_CONTENT && window.MGBS_CURRENT_CONTENT.paypal_client_id) {
+      let resolvedCurrency = CONFIG.currency;
+
+      if (window.MGBS_CURRENT_SETTINGS && window.MGBS_CURRENT_SETTINGS.paypal_client_id) {
+        resolvedClientId = window.MGBS_CURRENT_SETTINGS.paypal_client_id.trim();
+        if (window.MGBS_CURRENT_SETTINGS.paypal_currency) {
+          resolvedCurrency = window.MGBS_CURRENT_SETTINGS.paypal_currency.trim();
+        }
+      } else if (window.MGBS_CURRENT_CONTENT && window.MGBS_CURRENT_CONTENT.paypal_client_id) {
         resolvedClientId = window.MGBS_CURRENT_CONTENT.paypal_client_id.trim();
       }
 
       const script = document.createElement('script');
       script.id = 'paypal-js-sdk';
-      script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(resolvedClientId)}&currency=${encodeURIComponent(CONFIG.currency)}&components=buttons&enable-funding=venmo,card`;
+      script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(resolvedClientId)}&currency=${encodeURIComponent(resolvedCurrency)}&components=buttons&enable-funding=venmo,card`;
       script.async = true;
 
       script.onload = () => {
@@ -158,8 +216,13 @@
     })
     .then(res => res.json())
     .then(data => {
-      console.log('[MGBS PayPal] Transaction successfully logged to Google Sheet:', data);
-      markTransactionSynced(transactionData.order_id || transactionData.transaction_id);
+      if (data && data.status === 'verification_failed') {
+        console.error('[MGBS PayPal] Server verification failed:', data.message);
+        showToast('Payment verification notice: ' + data.message, 'warning');
+      } else {
+        console.log('[MGBS PayPal] Transaction successfully logged to Google Sheet:', data);
+        markTransactionSynced(transactionData.order_id || transactionData.transaction_id || transactionData.client_transaction_id);
+      }
       return data;
     })
     .catch(err => {
@@ -171,7 +234,7 @@
     try {
       const queue = JSON.parse(localStorage.getItem(STORAGE_WAL_KEY) || '[]');
       const updated = queue.map(item => {
-        if (item.payload && (item.payload.order_id === orderOrTxId || item.payload.transaction_id === orderOrTxId)) {
+        if (item.payload && (item.payload.order_id === orderOrTxId || item.payload.transaction_id === orderOrTxId || item.payload.client_transaction_id === orderOrTxId)) {
           item.synced = true;
         }
         return item;
@@ -325,7 +388,9 @@
             const transactionId = primaryCapture.id || captureDetails.id || data.orderID;
             const countryCode = (payer.address && payer.address.country_code) || 'US';
 
+            const clientTxId = 'ctx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
             const transactionRecord = {
+              client_transaction_id: clientTxId,
               transaction_id: transactionId,
               order_id: data.orderID,
               payer_name: payerName,

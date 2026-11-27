@@ -13,7 +13,43 @@
 
 (function () {
   const CONTENT_CACHE_KEY = 'mgbs_website_content_cache';
+  const SETTINGS_CACHE_KEY = 'mgbs_website_settings_cache';
   const ENDPOINT = "https://script.google.com/macros/s/AKfycbz7LoJa8i_6quvvuMvnjRXn2cHOYFQKNgzPRuCSuPCT8Sj7TGshYGc29qXu7ayFbeVX3g/exec";
+
+  /**
+   * Apply settings dictionary and notify reactive components (PayPal SDK, Auth)
+   */
+  function applySettings(settings) {
+    if (!settings || typeof settings !== 'object') return;
+    window.MGBS_CURRENT_SETTINGS = settings;
+    try {
+      localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(settings));
+    } catch (sErr) {
+      console.warn('[SettingsSync] Cache write warning:', sErr);
+    }
+    try {
+      window.dispatchEvent(new CustomEvent('mgbs:settings-synced', { detail: settings }));
+    } catch (evErr) {
+      console.warn('[SettingsSync] CustomEvent dispatch error:', evErr);
+    }
+  }
+
+  /**
+   * Initialize instant settings restoration from client cache
+   */
+  function initCachedSettings() {
+    try {
+      const cached = localStorage.getItem(SETTINGS_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed) {
+          applySettings(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('[SettingsSync] Cache read error:', e);
+    }
+  }
 
   /**
    * Apply content dictionary to DOM elements with [data-content-key]
@@ -88,12 +124,17 @@
       return res.json();
     })
     .then(data => {
-      if (data && data.status === 'success' && data.content) {
-        applyContent(data.content);
-        try {
-          localStorage.setItem(CONTENT_CACHE_KEY, JSON.stringify(data));
-        } catch (storageErr) {
-          console.warn('[ContentSync] Cache write warning:', storageErr);
+      if (data && data.status === 'success') {
+        if (data.content) {
+          applyContent(data.content);
+          try {
+            localStorage.setItem(CONTENT_CACHE_KEY, JSON.stringify(data));
+          } catch (storageErr) {
+            console.warn('[ContentSync] Cache write warning:', storageErr);
+          }
+        }
+        if (data.settings) {
+          applySettings(data.settings);
         }
       }
     })
@@ -103,20 +144,23 @@
     });
   }
 
-  // Restore cached content immediately on DOM parse
+  // Restore cached content and settings immediately on DOM parse
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       initCachedContent();
+      initCachedSettings();
       fetchRemoteContent();
     });
   } else {
     initCachedContent();
+    initCachedSettings();
     fetchRemoteContent();
   }
 
   // Expose global helper for manual refresh / testing
   window.MGBSContentSync = {
     refresh: fetchRemoteContent,
-    apply: applyContent
+    apply: applyContent,
+    applySettings: applySettings
   };
 })();
